@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="menu" style="float: right; margin: 10px; font-size: smaller;">
+	<a href="/">Approved</a> | <a href="/pending">Pending</a> | <a href="/new" style="font-weight: bold;">New Event</a>
+</div>
+
+<div id="primary">
+	<h3>{{event.name}}</h3>
+	Status: {{event.status}}<br/>
+	Start: {{event.start_time}}<br/>
+	Member: {{event.member}}<br/>
+	Type: {{event.type}}<br/>
+	Estimated size: {{event.estimated_size}}<br/>
+	Contact: {{event.contact_name}}, {{event.contact_phone}}<br/>
+	Rooms: {% for room in event.rooms %}{{room}}, {% endfor %}<br/>
+	Staff: {% for staffer in event.staff %}{{staffer}}, {% endfor %}<br/>
+	<br />
+	Details: {{event.details}}<br/>
+	URL: {{event.url}}<br/>
+	Fee: {{event.fee}}<br/>
+	Notes: {{event.notes}}<br/>
+  
+</div>
+
+
+{% endblock %}

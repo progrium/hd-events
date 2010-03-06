@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block content %}
+<script type="text/javascript" charset="utf-8"> 
+$(function() {
+  $('.date-pick').datePicker();
+});
+</script>
+<style type="text/css">
+/* located in demo.css and creates a little calendar icon
+ * instead of a text link for "Choose date"
+ */
+a.dp-choose-date {
+	float: left;
+	width: 16px;
+	height: 16px;
+	padding: 0;
+	margin: 3px 3px 0;
+	display: block;
+	text-indent: -2000px;
+	overflow: hidden;
+	background: url(/static/calendar.png) no-repeat; 
+}
+a.dp-choose-date.dp-disabled {
+	background-position: 0 -20px;
+	cursor: default;
+}
+/* makes the input field shorter once the date picker code
+ * has run (to allow space for the calendar icon
+ */
+input.dp-applied {
+	width: 85px;
+	float: right;
+}
+
+table{ border-collapse: collapse; border-spacing: 0;}
+table td { padding-top: 8px; padding-left: 4px; }
+table td span { font-size: smaller;}
+table td.first { width: 110px; padding-right: 20px; }
+#terms h3 {margin-top: 10px; margin-bottom: 0px;}
+#terms div { font-size: 11px; }
+#terms ol { padding-left: 25px;}
+#terms li { margin-top: 10px;}
+nobr label { display: inline;}
+</style>
+		
+<div id="menu" style="float: right; margin: 10px; font-size: smaller;">
+	<a href="/">Approved</a> | <a href="/pending">Pending</a> | <strong>New Event</strong>
+</div>
+
+<div id="primary" style="-moz-border-radius: 8px; -webkit-border-radius: 8px;">
+	<h3>New Event</h3>
+	
+	<div style="width: 46%; float: right; font-size: smaller; padding: 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; background: #eee;" id="terms">
+	  <h3 style="margin-top: 0px;">Member Terms as Event Host:</h3>
+	  <ol>
+	    <li><strong>Schedule</strong>
+	      <div>Dojo resources are allocated on a first come, first serve basis. Avoid scheduling major events on the same day. Otherwise, expect an Events Coordinator to suggest an alternate time or room.</div></li>
+      <li><strong>Staff</strong>
+        <div>Approval requires volunteer staff to opt in to support your event. The larger the event, the more staff needed. Staff are there to ensure guests play nice at the Dojo, and may even help out, but are not paid help.</div></li>
+      <li><strong>Approval</strong>
+        <div>The event must have enough staff and be approved by Event Coordinators. We reserve the right to refuse approval of events that are not considered in the spirit of Hacker Dojo.</div></li>
+      <li><strong>Setup</strong>
+        <div>You are responsible for your event setup. This may require setting up a day early depending on the size of the event.</div></li>
+      <li><strong>Parking</strong>
+        <div>We have strict parking rules that you need to convey to guests. If large enough, you may need a staff member to direct parking.</div></li>
+      <li><strong>Sign-in</strong>
+        <div>We require your guests to sign in with our sign-in kiosks for liability reasons. This information also helps support the Dojo by giving insight into member conversions from your event.</div></li>
+      <li><strong>Blurb</strong>
+        <div>You or a staff member need to give an introduction to Hacker Dojo before the event starts. This may include mentioning Hacker Dojo sponsors but shouldn't be longer than five minutes.</div></li>
+      <li><strong>Cleanup</strong>
+        <div>Please clean up after your event! Return it to the way you found it at the very least. Consider getting guests to pitch in.</div></li>
+      <li><strong>Supplies</strong>
+        <div>Please refill supplies consumed. If you have a large event, your guests will consume shared resources such as snacks, toilet paper and other consumables.</div></li>
+      <li><strong>Damages</strong>
+        <div>You are held responsible for damages to Dojo facilities and equipment during your event.</div></li>
+    </ol>
+	</div>
+	
+	<form method="post" style="width: 49%;">
+		<h4>Event Name</h4>
+		<input type="text" name="name" style="width: 300px; margin-left: 4px;" />
+		<h4>When</h4>
+		<table style="margin: 0px;"><tr>
+		  <td class="first"><label for="start_date">Date:</label> 
+        <input name="start_date" id="start_date" class="date-pick" /></td>
+      <td><label for="start_time">Time:</label> 
+        <select name="start_time_hour">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+          <option>6</option>
+          <option>7</option>
+          <option>8</option>
+          <option>9</option>
+          <option>10</option>
+          <option>11</option>
+          <option>12</option>
+        </select>:<select name="start_time_minute">
+          <option>00</option>
+          <option>30</option>
+        </select> <select name="start_time_ampm">
+            <option>pm</option>
+            <option>am</option>
+          </select></td>
+    </tr></table>
+    <h4>Type of Event</h4>
+    <table style="margin: 0px;"><tr>
+		  <td class="first"><label for="type">Category:</label> 
+         <select name="type" id="type-select" onchange="if(this.value=='Other...'){$('#type-select').css('display','none');$('#type-text').css('display','inline');$('#type-text').focus()}">
+            <option>Meetup</option>
+            <option>Hackathon</option>
+            <option>Conference</option>
+            <option>Workshop</option>
+            <option>Lecture</option>
+            <option>Social</option>
+            <option>Other...</option>
+          </select><input type="text" name="type" id="type-text" style="display: none;" size="15"></td>
+      <td><label for="estimated_size">Expected Size:</label>
+        <input type="text" name="estimated_size" size="4" style="text-align: right;" /> <span>people</span></td>
+    </tr></table>
+    <h4>Primary Contact</h4>
+    <table style="margin: 0px;"><tr>
+		  <td class="first"><label for="contact_name">Name:</label>
+		    <input type="text" name="contact_name" size="16" /></td>
+		  <td><label for="contact_phone">Phone Number:</label>
+		    <input type="text" name="contact_phone" size="16" /></td>
+		</tr></table>
+		<h4>More Info (optional)</h4>
+		<table style="margin: 0px;">
+		  <tr><td><label for="details">Event details:</label>
+		    <textarea rows="3" style="width: 300px;" name="details"></textarea></td></tr>
+		  <tr><td><label for="url">Event URL:</label>
+		    <input type="text" name="url" style="width: 300px;" /></td></tr>
+		  <tr><td><label for="fee">Entry Fee:</label>
+		    <input type="text" name="fee" size="8"/> <span style="color: gray; font-size: x-small;">Leave blank if free</span></td></tr>
+		  <tr><td><label for="details">Requested Rooms:</label>
+		    {% for room in rooms %}<nobr><input type="checkbox" id="room-{{room}}" name="rooms" value="{{room}}" /><label for="room-{{room}}">{{room|title}}</label></nobr> {% endfor %} </td></tr>
+		  <tr><td style="padding-top: 8px;"><label for="details">Special notes:</label>
+		    <textarea rows="3" style="width: 300px;" name="notes"></textarea></td></tr>
+		</tr></table>
+		<p style="font-size:smaller;">You have 30 days for approval before your event application expires. The primary bottleneck to quick approval is getting staff to opt in. You will be notified either way.</p>
+		<p style="font-size:smaller; font-weight: bold;">By submitting this event, you agree to the responsibilities listed to the right.</p>
+		<input type="submit" value="I agree, submit event for approval" style="font-size: larger; margin: 5px;" />
+	</form>
+
+</div>
+
+
+{% endblock %}

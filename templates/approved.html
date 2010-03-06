@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="menu" style="float: right; margin: 10px; font-size: smaller;">
+	Approved | <a href="/pending">Pending</a> | <a href="/new" style="font-weight: bold;">New Event</a>
+</div>
+
+<div id="primary">
+	<h3>Upcoming Events</h3>
+	
+	{% regroup events by start_date as grouped_events %}
+	{% for events in grouped_events %}
+	<h4>{% ifequal events.grouper today.date %}<span style="text-decoration:underline;">Today</span> - {% endifequal %}{% ifequal events.grouper tomorrow.date %}<span style="text-decoration:underline;">Tomorrow</span> - {% endifequal %}{{events.grouper|date:"l, F j"}}</h4>
+	<table>
+	  {% for event in events.list %}
+		<tr><td width="75">{{event.start_time|date:"g:iA"|lower}}</td><td><a href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a></td></tr>
+		{% endfor %}
+	</table>
+	{% endfor %}
+	
+</div>
+
+
+{% endblock %}

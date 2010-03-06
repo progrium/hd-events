@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>Hacker Dojo Events</title>
+    <link href="/static/style.css" type="text/css" rel="stylesheet" />
+    <link href="/static/datePicker.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/date.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.datePicker.js"></script>
+  </head>
+  <body>
+		<div id="top">
+			{% if user %}
+			<span><strong>{{user.email}}</strong> | <a href="/myevents">My Events</a> | <a href="{{logout_url}}">Logout</a></span>
+			{% else %}
+			<span><a style="font-weight: bold;" href="{{login_url}}">Login</a> | <a href="http://signup.hackerdojo.com/upgrade/needaccount">Need an account?</a></span>
+			{% endif %}
+		</div>
+    <div id="wrapper">
+      <div id="header">
+        <img src="/static/dojo_icon.png" style="float: left;" />
+        <h1>Hacker Dojo</h1>
+        <h2 style="font-size: x-large;">Events</h2>
+      </div>
+      <div id="content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+   
+  </body>
+</html>
