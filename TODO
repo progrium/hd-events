@@ -1,0 +1,12 @@
+get ical of events
+
+expire events after 30 days
+send email notifications
+past events
+allow owner actions: cancel, see owned
+allow admin actions: cancel, hold
+edit event
+get rss of events
+
+get json of event/events
+see previous(all),canceled(staff,owner),expired(admin,owner) events

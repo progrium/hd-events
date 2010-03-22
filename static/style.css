@@ -25,5 +25,5 @@ label { display: block; font-size: smaller;}
 a:visited { color: blue;}
 
 #content { border-top: 3px solid #d50025; background: #eee; padding: 10px; }
-#primary { background: white; width: 660px; padding: 10px;}
+#primary { background: white; width: 660px; padding: 10px; -moz-border-radius: 8px; -webkit-border-radius: 8px;}
 h4 { font-size: smaller; }
