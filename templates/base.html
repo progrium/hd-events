@@ -6,6 +6,19 @@
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/js/date.js"></script>
     <script type="text/javascript" src="/static/js/jquery.datePicker.js"></script>
+    <script type="text/javascript" src="/static/js/DD_roundies_0.0.2a-min.js"></script>
+    <script type="text/javascript">
+      var rounder = function(elem, sz, allBrowsers) {
+        // rounded corners JS, handles IE7, 8 too:
+        DD_roundies.addRule(elem, sz.toString()+'px', allBrowsers);
+      }
+      $(function() {
+        var rndrs = ['#primary'];
+        for(r in rndrs) {
+          rounder(rndrs[r], 8, true);
+        }
+      });
+    </script>
   </head>
   <body>
 		<div id="top">
