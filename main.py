@@ -160,7 +160,7 @@ class PastHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        today = datetime.today()
+        today = date.today()
         events = Event.all().filter('start_date < ', today).order('start_time DESC')
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
