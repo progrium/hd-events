@@ -139,6 +139,32 @@ class ApprovedHandler(webapp.RequestHandler):
         tomorrow = today + timedelta(days=1)
         self.response.out.write(template.render('templates/approved.html', locals()))
 
+class MyEventsHandler(webapp.RequestHandler):
+    @util.login_required
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        events = Event.all().filter('member = ', user).order('start_time')
+        today = datetime.today()
+        tomorrow = today + timedelta(days=1)
+        is_admin = username(user) in dojo('/groups/events')
+        self.response.out.write(template.render('templates/myevents.html', locals()))
+
+class PastHandler(webapp.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        today = datetime.today()
+        events = Event.all().filter('start_date < ', today).order('start_time DESC')
+        is_admin = username(user) in dojo('/groups/events')
+        self.response.out.write(template.render('templates/past.html', locals()))
+
 class PendingHandler(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -189,7 +215,9 @@ def main():
     application = webapp.WSGIApplication([
         ('/', ApprovedHandler),
         ('/events\.(.+)', EventsHandler),
+        ('/past\.(.+)', PastHandler),
         ('/pending', PendingHandler),
+        ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
         ('/event/(\d+).*', EventHandler), ],debug=True)
     util.run_wsgi_app(application)

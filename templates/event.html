@@ -6,10 +6,11 @@
 
 <div id="primary">
 	<h3><a href='{{event.url}}'>{{event.name|title}}</a></h3>
-	<p><form method="post" style="display: inline;">
-	  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
-	  {% if is_admin %}<input type="submit" name="state" value="Cancel" />{% endif %}
-	  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
+	<p>
+		<form method="post" style="display: inline;">
+		  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
+		  {% if is_admin %}<input type="submit" name="state" value="Cancel" />{% endif %}
+		  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
 	  </form>
 	</p>
 	
@@ -20,8 +21,8 @@
 	<div class='b-block'><div class='b-label'>Estimated size:</div><div class='b-data'>{{event.estimated_size}}</div></div>
 	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}, {{event.contact_phone}}</div></div>
 	<div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'>{{event.fee}}</div></div>
-	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{% for room in event.rooms %}{{room}}, {% endfor %}</div></div>
-	<div class='b-block'><div class='b-label'>Staff:</div><div class='b-data'>{% for staffer in event.staff %}{{staffer}}, {% endfor %}</div></div>
+	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{% for room in event.rooms %}{{room}}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</div></div>
+	<div class='b-block'><div class='b-label'>Staff:</div><div class='b-data'>{% for staffer in event.staff %}{{staffer}}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</div></div>
 	<div class='thin-border'></div>
 	<div class='b-block'><div class='b-label'>Details:</div><div class='b-data'>{{event.details}}</div></div>
 	<br />

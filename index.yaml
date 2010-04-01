@@ -12,5 +12,10 @@ indexes:
 
 - kind: Event
   properties:
+  - name: member
+  - name: start_time
+
+- kind: Event
+  properties:
   - name: status
   - name: start_time
