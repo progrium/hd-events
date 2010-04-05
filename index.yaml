@@ -18,4 +18,9 @@ indexes:
 - kind: Event
   properties:
   - name: status
+  - name: expired
+
+- kind: Event
+  properties:
+  - name: status
   - name: start_time
