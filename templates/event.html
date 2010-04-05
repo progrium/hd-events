@@ -8,13 +8,15 @@
 	<h3>{{event.name}}</h3>
 	<p><form method="post" style="display: inline;">
 	  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
-	  {% if is_admin %}<input type="submit" name="state" value="Cancel" />{% endif %}
+	  {% if is_admin %}<input type="submit" name="state" value="Cancel" /> 
+	    <input type="submit" name="state" value="Expire" />{% endif %}
 	  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
 	  </form>
 	</p>
 	
 	Status: {{event.status}}<br/>
 	Start: {{event.start_time}}<br/>
+	End: {{event.end_time}}<br/>
 	Member: {{event.member}}<br/>
 	Type: {{event.type}}<br/>
 	Estimated size: {{event.estimated_size}}<br/>

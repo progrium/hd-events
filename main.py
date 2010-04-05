@@ -1,13 +1,20 @@
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import util, template
-from google.appengine.api import urlfetch, memcache, users
+from google.appengine.api import urlfetch, memcache, users, mail
+
 from django.utils import simplejson
-from datetime import datetime, timedelta
 from django.template.defaultfilters import slugify
-import time
-from datetime import datetime
+from icalendar import Calendar, Event as CalendarEvent
 import logging, urllib
-from icalendar import Calendar, Event as CalendarEvent, UTC # timezone
+
+from datetime import datetime, timedelta, time
+from pytz import timezone
+import pytz
+
+ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
+GUESTS_PER_STAFF = 25
+PENDING_LIFETIME = 30 # days
+FROM_ADDRESS = "no-reply@hackerdojo-events.appspot.com"
 
 # Hacker Dojo Domain API helper with caching
 def dojo(path):
@@ -15,10 +22,7 @@ def dojo(path):
     cache_ttl = 3600
     resp = memcache.get(path)
     if not resp:
-        resp = urlfetch.fetch(base_url + path)
-        if 'Refreshing' in resp.content:
-            time.sleep(2)
-            return urlfetch.fetch(base_url + path)
+        resp = urlfetch.fetch(base_url + path, deadline=10)
         try:
             resp = simplejson.loads(resp.content)
         except Exception, e:
@@ -30,8 +34,28 @@ def dojo(path):
 def username(user):
     return user.nickname().split('@')[0] if user else None
 
-ROOM_OPTIONS = ['cave', 'hall', 'savanna', 'sunroom', 'greenroom', 'frontarea', '140b']
-GUESTS_PER_STAFF = 25
+def notify_owner_confirmation(event):
+    mail.send_mail(FROM_ADDRESS, event.member.email(),
+        "Event application submitted",
+        """This is a confirmation that your event:\n\n%s\n\n
+        has been submitted for approval. If staff is needed for your event, they
+        will be notified of your request. You will be notified as soon as it's 
+        approved and on the calendar.""" % event.name)
+
+def notify_staff_needed(event):
+    pass
+
+def notify_new_event(event):
+    pass
+
+def notify_owner_approved(event):
+    pass
+
+def notify_owner_expiring(event):
+    pass
+
+def notify_owner_expired(event):
+    pass
 
 class Event(db.Model):
     status = db.StringProperty(required=True, default='pending', choices=set(
@@ -53,8 +77,23 @@ class Event(db.Model):
     contact_name = db.StringProperty(required=True)
     contact_phone = db.StringProperty(required=True)
     
+    expired = db.DateTimeProperty()
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
+
+    @classmethod
+    def get_approved_list(cls):
+        return cls.all() \
+            .filter('start_time >', datetime.today()) \
+            .filter('status IN', ['approved', 'canceled']) \
+            .order('start_time')
+    
+    @classmethod
+    def get_pending_list(cls):
+        return cls.all() \
+            .filter('start_time >', datetime.today()) \
+            .filter('status IN', ['pending', 'understaffed', 'onhold', 'expired']) \
+            .order('start_time')
 
     def is_staffed(self):
         return len(self.staff) >= int(self.estimated_size) / GUESTS_PER_STAFF
@@ -67,6 +106,7 @@ class Event(db.Model):
     
     def approve(self):
         if self.is_staffed():
+            self.expired = None
             self.status = 'approved'
         else:
             self.status = 'understaffed'
@@ -74,6 +114,11 @@ class Event(db.Model):
         
     def cancel(self):
         self.status = 'canceled'
+        self.put()
+    
+    def expire(self):
+        self.expired = datetime.now()
+        self.status = 'expired'
         self.put()
     
     def add_staff(self, user):
@@ -85,8 +130,31 @@ class Event(db.Model):
     def to_ical(self):
         event = CalendarEvent()
         event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
-        event.add('dtstart', self.start_time)
+        event.add('dtstart', self.start_time.replace(tzinfo=timezone('US/Pacific')))
         return event
+
+class ExpireCron(webapp.RequestHandler):    
+    def post(self):
+        # Expire events marked to expire today
+        today = datetime.combine(datetime.today(), time())
+        events = Event.all() \
+            .filter('status IN', ['pending', 'understaffed']) \
+            .filter('expired >=', today) \
+            .filter('expired <', today + timedelta(days=1))
+        for event in events:
+            event.expire()
+            notify_owner_expired(event)
+
+class ExpireReminderCron(webapp.RequestHandler):
+    def post(self):
+        # Find events expiring in 10 days to warn owner
+        ten_days = datetime.combine(datetime.today(), time()) + timedelta(days=10)
+        events = Event.all() \
+            .filter('status IN', ['pending', 'understaffed']) \
+            .filter('expired >=', ten_days) \
+            .filter('expired <', ten_days + timedelta(days=1))
+        for event in events:
+            notify_owner_expiring(event)
 
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
@@ -125,6 +193,11 @@ class EventHandler(webapp.RequestHandler):
                 event.add_staff(user)
             if state.lower() == 'cancel' and is_admin:
                 event.cancel()
+            if state.lower() == 'expire' and is_admin:
+                event.expire()
+            
+            if event.status == 'approved':
+                notify_owner_approved(event)
         self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
 
 class ApprovedHandler(webapp.RequestHandler):
@@ -134,8 +207,8 @@ class ApprovedHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
         today = datetime.today()
+        events = Event.get_approved_list()
         tomorrow = today + timedelta(days=1)
         self.response.out.write(template.render('templates/approved.html', locals()))
 
@@ -146,7 +219,7 @@ class PendingHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        events = Event.all().filter('status IN', ['pending', 'understaffed', 'onhold', 'expired']).order('start_time')
+        events = Event.get_pending_list()
         today = datetime.today()
         tomorrow = today + timedelta(days=1)
         is_admin = username(user) in dojo('/groups/events')
@@ -166,24 +239,39 @@ class NewHandler(webapp.RequestHandler):
     def post(self):
         user = users.get_current_user()
         start_time = datetime.strptime("%s %s:%s %s" % (
-            self.request.get('start_date'),
+            self.request.get('date'),
             self.request.get('start_time_hour'),
             self.request.get('start_time_minute'),
             self.request.get('start_time_ampm')), "%d/%m/%Y %I:%M %p")
-        event = Event(
-            name = self.request.get('name'),
-            start_time = start_time,
-            type = self.request.get('type'),
-            estimated_size = self.request.get('estimated_size'),
-            contact_name = self.request.get('contact_name'),
-            contact_phone = self.request.get('contact_phone'),
-            details = self.request.get('details'),
-            url = self.request.get('url'),
-            fee = self.request.get('fee'),
-            notes = self.request.get('notes'),
-            rooms = self.request.get_all('rooms'))
-        event.put()
-        self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+        end_time = datetime.strptime("%s %s:%s %s" % (
+            self.request.get('date'),
+            self.request.get('end_time_hour'),
+            self.request.get('end_time_minute'),
+            self.request.get('end_time_ampm')), "%d/%m/%Y %I:%M %p")
+        if (end_time-start_time).days < 0:
+            raise ValueError("End time must be after start time")
+        else:
+            event = Event(
+                name = self.request.get('name'),
+                start_time = start_time,
+                end_time = end_time,
+                type = self.request.get('type'),
+                estimated_size = self.request.get('estimated_size'),
+                contact_name = self.request.get('contact_name'),
+                contact_phone = self.request.get('contact_phone'),
+                details = self.request.get('details'),
+                url = self.request.get('url'),
+                fee = self.request.get('fee'),
+                notes = self.request.get('notes'),
+                rooms = self.request.get_all('rooms'),
+                expired = datetime.today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
+                )
+            event.put()
+            notify_owner_confirmation(event)
+            if not event.is_staffed():
+                notify_staff_needed(event)
+            notify_new_event(event)
+            self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
 
 def main():
     application = webapp.WSGIApplication([
@@ -191,7 +279,9 @@ def main():
         ('/events\.(.+)', EventsHandler),
         ('/pending', PendingHandler),
         ('/new', NewHandler),
-        ('/event/(\d+).*', EventHandler), ],debug=True)
+        ('/event/(\d+).*', EventHandler),
+        ('/expire', ExpireCron),
+        ('/expiring', ExpireReminderCron), ],debug=True)
     util.run_wsgi_app(application)
 
 if __name__ == '__main__':

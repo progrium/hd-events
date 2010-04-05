@@ -10,7 +10,7 @@
   <body>
 		<div id="top">
 			{% if user %}
-			<span><strong>{{user.email}}</strong> | <a href="/myevents">My Events</a> | <a href="{{logout_url}}">Logout</a></span>
+			<span><strong>{{user.email}}</strong> <!--| <a href="/myevents">My Events</a--> | <a href="{{logout_url}}">Logout</a></span>
 			{% else %}
 			<span><a style="font-weight: bold;" href="{{login_url}}">Login</a> | <a href="http://signup.hackerdojo.com/upgrade/needaccount">Need an account?</a></span>
 			{% endif %}
