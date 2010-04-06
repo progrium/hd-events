@@ -5,7 +5,7 @@
 </div>
 
 <div id="primary">
-	<h3><a href='{{event.url}}'>{{event.name|title}}</a></h3>
+	<h3><a style="color: black;" href='{{event.url}}'>{{event.name|title}}</a></h3>
 	<p>
 		<form method="post" style="display: inline;">
 		  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}

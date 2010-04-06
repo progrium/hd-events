@@ -7,7 +7,7 @@ from django.template.defaultfilters import slugify
 from icalendar import Calendar, Event as CalendarEvent
 import logging, urllib
 
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, date
 from pytz import timezone
 import pytz
 
@@ -233,8 +233,8 @@ class PastHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        today = date.today()
-        events = Event.all().filter('start_date < ', today).order('start_time DESC')
+        today = datetime.today()
+        events = Event.all().filter('start_time < ', today).order('-start_time')
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
 
@@ -303,7 +303,7 @@ def main():
     application = webapp.WSGIApplication([
         ('/', ApprovedHandler),
         ('/events\.(.+)', EventsHandler),
-        ('/past\.(.+)', PastHandler),
+        ('/past', PastHandler),
         ('/pending', PendingHandler),
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),

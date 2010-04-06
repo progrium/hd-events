@@ -6,7 +6,6 @@
 
 <div id="primary">
 	<h3>Upcoming Events</h3>
-	<p><a href='/past'>Past Events</a></p>
 	
 	{% regroup events by start_date as grouped_events %}
 	{% for events in grouped_events %}
@@ -18,6 +17,7 @@
 	</table>
 	{% endfor %}
 	
+		<p style="font-size: smaller;"><a href='/past'>Past Events</a></p>
 		<p style="font-size: x-small">Alternative formats: <a href="/events.ics">iCal</a> | RSS | JSON</p>
 </div>
 
