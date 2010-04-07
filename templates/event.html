@@ -20,7 +20,7 @@
 	<div class='b-block'><div class='b-label'>Type:</div><div class='b-data'>{{event.type}}</div></div>
 	<div class='b-block'><div class='b-label'>Estimated size:</div><div class='b-data'>{{event.estimated_size}}</div></div>
 	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}, {{event.contact_phone}}</div></div>
-	<div class='b-block'><div class='b-label'>URL:</div><div class='b-data'>{{event.url}}</div></div>
+	<div class='b-block'><div class='b-label'>URL:</div><div class='b-data'><a href='{{event.url}}'>{{event.url}}</a></div></div>
 	<div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'>{{event.fee}}</div></div>
 	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{% for room in event.rooms %}{{room}}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</div></div>
 	<div class='b-block'><div class='b-label'>Staff:</div><div class='b-data'>{% for staffer in event.staff %}{{staffer}}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</div></div>
