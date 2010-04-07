@@ -34,6 +34,20 @@ def dojo(path):
 def username(user):
     return user.nickname().split('@')[0] if user else None
 
+def human_username(user):
+    if user:
+        nick = user.nickname().split('@')[0]
+        first = nick.split('.')[0]
+        last = nick.split('.')[1]
+        return first + ' ' + last
+    else:
+        return None
+
+def to_sentence(aList):
+    sentence = ', '.join([e for e in aList if aList.index(e) != len(aList) -1])
+    if len(aList) > 1: sentence = '%s and %s' % (sentence, aList[-1])
+    return sentence
+    
 def notify_owner_confirmation(event):
     mail.send_mail(FROM_ADDRESS, event.member.email(),
         "Event application submitted",
@@ -94,6 +108,12 @@ class Event(db.Model):
             .filter('start_time >', datetime.today()) \
             .filter('status IN', ['pending', 'understaffed', 'onhold', 'expired']) \
             .order('start_time')
+
+    def stafflist(self):
+        return to_sentence(self.staff)
+
+    def roomlist(self):
+        return to_sentence(self.rooms)
 
     def is_staffed(self):
         return len(self.staff) >= int(self.estimated_size) / GUESTS_PER_STAFF
