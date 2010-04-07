@@ -14,7 +14,7 @@ import pytz
 ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
-FROM_ADDRESS = "no-reply@hackerdojo-events.appspot.com"
+FROM_ADDRESS = "Dojo Events <no-reply@hackerdojo-events.appspotmail.com>"
 
 # Hacker Dojo Domain API helper with caching
 def dojo(path):
@@ -35,9 +35,9 @@ def username(user):
     return user.nickname().split('@')[0] if user else None
 
 def notify_owner_confirmation(event):
-    mail.send_mail(FROM_ADDRESS, event.member.email(),
-        "Event application submitted",
-        """This is a confirmation that your event:\n\n%s\n\n
+    mail.send_mail(sender=FROM_ADDRESS, to=event.member.email(),
+        subject="Event application submitted",
+        body="""This is a confirmation that your event:\n\n%s\n\n
         has been submitted for approval. If staff is needed for your event, they
         will be notified of your request. You will be notified as soon as it's 
         approved and on the calendar.""" % event.name)
