@@ -43,6 +43,11 @@ def human_username(user):
     else:
         return None
 
+def to_name_list(aList):
+    sentence = ', '.join([human_username(e) for e in aList if aList.index(e) != len(aList) -1])
+    if len(aList) > 1: sentence = '%s and %s' % (sentence, human_username(aList[-1]))
+    return sentence
+  
 def to_sentence(aList):
     sentence = ', '.join([e for e in aList if aList.index(e) != len(aList) -1])
     if len(aList) > 1: sentence = '%s and %s' % (sentence, aList[-1])
@@ -110,7 +115,7 @@ class Event(db.Model):
             .order('start_time')
 
     def stafflist(self):
-        return to_sentence(self.staff)
+        return to_name_list(self.staff)
 
     def roomlist(self):
         return to_sentence(self.rooms)
