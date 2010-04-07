@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, time, date
 from pytz import timezone
 import pytz
 
-ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
+ROOM_OPTIONS = ['cave', 'cubby1', 'cubby2', 'cubby3', 'deck', 'savanna', '140b', 'up_lounge']
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
 FROM_ADDRESS = "Dojo Events <no-reply@hackerdojo-events.appspotmail.com>"
