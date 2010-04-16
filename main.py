@@ -10,6 +10,7 @@ import logging, urllib
 from datetime import datetime, timedelta, time, date
 from pytz import timezone
 import pytz
+import feedback
 
 ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
 GUESTS_PER_STAFF = 25
@@ -57,9 +58,9 @@ def notify_owner_confirmation(event):
     mail.send_mail(sender=FROM_ADDRESS, to=event.member.email(),
         subject="Event application submitted",
         body="""This is a confirmation that your event:\n\n%s\n\n
-        has been submitted for approval. If staff is needed for your event, they
-        will be notified of your request. You will be notified as soon as it's 
-        approved and on the calendar.""" % event.name)
+has been submitted for approval. If staff is needed for your event, they
+will be notified of your request. You will be notified as soon as it's 
+approved and on the calendar.""" % event.name)
 
 def notify_staff_needed(event):
     pass
@@ -324,43 +325,6 @@ class NewHandler(webapp.RequestHandler):
             notify_new_event(event)
             self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
 
-class Feedback(db.Model):
-    user = db.ReferenceProperty(Event)
-    event = db.StringProperty()
-    rating = db.IntegerProperty()
-    comment = db.StringProperty(multiline=True)
-    submitted = db.DateTimeProperty()
-    past_events = db.GqlQuery("SELECT * from Event WHERE end_time < :1", today)
-
-class FeedbacksHandler(webapp.RequestHandler):
-    def get(self, format):
-        # if format == 'ics':
-        #     events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
-        #     cal = Calendar()
-        #     for event in events:
-        #         cal.add_component(event.to_ical())
-        #     self.response.headers['content-type'] = 'text/calendar'
-        #     self.response.out.write(cal.as_string())
-
-class FeedbackHandler(webapp.RequestHandler):
-    def get(self, id):
-        feedback = Feedback.get_by_id(int(id))
-        user = users.get_current_user()
-        if user:
-          is_admin = username(user) in dojo('/groups/events')
-          is_staff = username(user) in dojo('/groups/staff')
-          logout_url = users.create_logout_url('/')
-        else:
-          login_url = users.create_login_url('/')
-          self.response.out.write(template.render('templates/event.html', locals()))
-
-    def post(self, id):
-        feedback = Feedback.get_by_id(int(id))
-        user = users.get_current_user()
-        is_admin = username(user) in dojo('/groups/events')
-        is_staff = username(user) in dojo('/groups/staff')
-        # self.redirect('/feedback/%s-%s' % (feedback.key().id(), slugify(feedback.name)))
-
 def main():
     application = webapp.WSGIApplication([
         ('/', ApprovedHandler),
@@ -371,7 +335,8 @@ def main():
         ('/new', NewHandler),
         ('/event/(\d+).*', EventHandler),
         ('/expire', ExpireCron),
-        ('/expiring', ExpireReminderCron), ],debug=True)
+        ('/expiring', ExpireReminderCron),
+        ('/new-feedback', Feedback.NewFeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 
 if __name__ == '__main__':
