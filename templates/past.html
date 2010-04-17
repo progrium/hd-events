@@ -13,7 +13,10 @@
 	<h4>{% ifequal events.grouper today.date %}<span style="text-decoration:underline;">Today</span> - {% endifequal %}{{events.grouper|date:"l, F j"}}</h4>
 	<table>
 	  {% for event in events.list %}
-		<tr><td width="75">{{event.start_time|date:"g:iA"|lower}}</td><td><a {% if event.is_canceled %}style="text-decoration: line-through;"{% endif %} href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a> {% if event.is_canceled %}<span style="color: white; font-size: x-small; padding: 2px; background: gray">canceled</span>{% endif %}</td></tr>
+		<tr>
+			<td width="75">{{event.start_time|date:"g:iA"|lower}}</td>
+			<td><a {% if event.is_canceled %}style="text-decoration: line-through;"{% endif %} href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a> {% if event.is_canceled %}<span style="color: white; font-size: x-small; padding: 2px; background: gray">canceled</span>{% else %}<a href='/feedback/new/{{event.key.id}}'>Feedback</a>{% endif %}</td>
+		</tr>
 		{% endfor %}
 	</table>
 	{% endfor %}

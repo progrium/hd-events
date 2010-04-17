@@ -10,12 +10,8 @@ import logging, urllib
 from datetime import datetime, timedelta, time, date
 from pytz import timezone
 import pytz
-import feedback
-
-ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
-GUESTS_PER_STAFF = 25
-PENDING_LIFETIME = 30 # days
-FROM_ADDRESS = "Dojo Events <no-reply@hackerdojo-events.appspotmail.com>"
+from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME, FROM_ADDRESS
+import feedback_handlers
 
 # Hacker Dojo Domain API helper with caching
 def dojo(path):
@@ -44,22 +40,12 @@ def human_username(user):
     else:
         return None
 
-def to_name_list(aList):
-    sentence = ', '.join([human_username(e) for e in aList if aList.index(e) != len(aList) -1])
-    if len(aList) > 1: sentence = '%s and %s' % (sentence, human_username(aList[-1]))
-    return sentence
-  
-def to_sentence(aList):
-    sentence = ', '.join([e for e in aList if aList.index(e) != len(aList) -1])
-    if len(aList) > 1: sentence = '%s and %s' % (sentence, aList[-1])
-    return sentence
-    
 def notify_owner_confirmation(event):
     mail.send_mail(sender=FROM_ADDRESS, to=event.member.email(),
         subject="Event application submitted",
         body="""This is a confirmation that your event:\n\n%s\n\n
 has been submitted for approval. If staff is needed for your event, they
-will be notified of your request. You will be notified as soon as it's 
+will be notified of your request. You will be notified as soon as it's
 approved and on the calendar.""" % event.name)
 
 def notify_staff_needed(event):
@@ -76,88 +62,6 @@ def notify_owner_expiring(event):
 
 def notify_owner_expired(event):
     pass
-
-class Event(db.Model):
-    status = db.StringProperty(required=True, default='pending', choices=set(
-        ['pending', 'understaffed', 'approved', 'canceled', 'onhold', 'expired']))
-    member = db.UserProperty(auto_current_user_add=True)
-    name = db.StringProperty(required=True)
-    start_time = db.DateTimeProperty(required=True)
-    end_time = db.DateTimeProperty()
-    staff = db.ListProperty(users.User)
-    rooms = db.StringListProperty() #choices=set(ROOM_OPTIONS)
-    
-    details = db.StringProperty()
-    url = db.StringProperty()
-    fee = db.StringProperty()
-    notes = db.StringProperty()
-    type = db.StringProperty(required=True)
-    estimated_size = db.StringProperty(required=True)
-    
-    contact_name = db.StringProperty(required=True)
-    contact_phone = db.StringProperty(required=True)
-    
-    expired = db.DateTimeProperty()
-    created = db.DateTimeProperty(auto_now_add=True)
-    updated = db.DateTimeProperty(auto_now=True)
-
-    @classmethod
-    def get_approved_list(cls):
-        return cls.all() \
-            .filter('start_time >', datetime.today()) \
-            .filter('status IN', ['approved', 'canceled']) \
-            .order('start_time')
-    
-    @classmethod
-    def get_pending_list(cls):
-        return cls.all() \
-            .filter('start_time >', datetime.today()) \
-            .filter('status IN', ['pending', 'understaffed', 'onhold', 'expired']) \
-            .order('start_time')
-
-    def stafflist(self):
-        return to_name_list(self.staff)
-
-    def roomlist(self):
-        return to_sentence(self.rooms)
-
-    def is_staffed(self):
-        return len(self.staff) >= int(self.estimated_size) / GUESTS_PER_STAFF
-
-    def is_canceled(self):
-        return self.status == 'canceled'
-
-    def start_date(self):
-        return self.start_time.date()
-    
-    def approve(self):
-        if self.is_staffed():
-            self.expired = None
-            self.status = 'approved'
-        else:
-            self.status = 'understaffed'
-        self.put()
-        
-    def cancel(self):
-        self.status = 'canceled'
-        self.put()
-    
-    def expire(self):
-        self.expired = datetime.now()
-        self.status = 'expired'
-        self.put()
-    
-    def add_staff(self, user):
-        self.staff.append(user)
-        if self.is_staffed() and self.status == 'understaffed':
-            self.status = 'approved'
-        self.put()
-    
-    def to_ical(self):
-        event = CalendarEvent()
-        event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
-        event.add('dtstart', self.start_time.replace(tzinfo=timezone('US/Pacific')))
-        return event
 
 class ExpireCron(webapp.RequestHandler):    
     def post(self):
@@ -202,6 +106,7 @@ class EventHandler(webapp.RequestHandler):
             can_approve = (event.status in ['pending'] and is_admin)
             can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
             logout_url = users.create_logout_url('/')
+            feedbacks = event.feedback_set
         else:
             login_url = users.create_login_url('/')
         self.response.out.write(template.render('templates/event.html', locals()))
@@ -336,7 +241,7 @@ def main():
         ('/event/(\d+).*', EventHandler),
         ('/expire', ExpireCron),
         ('/expiring', ExpireReminderCron),
-        ('/new-feedback', Feedback.NewFeedbackHandler) ],debug=True)
+        ('/feedback/new/(\d+).*', feedback_handlers.NewFeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 
 if __name__ == '__main__':

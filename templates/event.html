@@ -28,7 +28,18 @@
 	<div class='b-block'><div class='b-label'>Details:</div><div class='b-data'>{{event.details}}</div></div>
 	<br />
 	<div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'>{{event.notes}}</div></div>
-  
+	{% if feedbacks.count %}
+	<div class='thin-border'></div>
+	<div id='secondary'>
+	<h3>Feedback</h3>
+	{% for feedback in feedbacks %}
+	<div class='b-block'><div class='b-label'>Submitted by:</div><div class='b-data'>{{feedback.submitter}}</div></div>
+	<div class='b-block'><div class='b-label'>Rating:</div><div class='b-data'>{{feedback.rating}}</div></div>
+	<div class='b-block'><div class='b-label'>Comment:</div><div class='b-data'>{{feedback.comment}}</div></div>
+	<div class='thinner-border'></div>
+  {% endfor %}
+	</div>
+  {% endif %}
 </div>
 
 

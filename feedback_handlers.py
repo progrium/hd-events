@@ -5,17 +5,9 @@ from google.appengine.api import urlfetch, memcache, users, mail
 from django.utils import simplejson
 from django.template.defaultfilters import slugify
 import logging, urllib
-from main import Event
+from models import Event, Feedback
 
 from datetime import datetime, timedelta, time, date
-
-class Feedback(db.Model):
-    submitter = db.UserProperty(auto_current_user_add=True)
-    event = db.ReferenceProperty(Event)
-    rating = db.IntegerProperty()
-    comment = db.StringProperty(multiline=True)
-    submitted = db.DateTimeProperty()
-    past_events = db.GqlQuery("SELECT * from Event WHERE end_time < :1", today)
 
 class FeedbacksHandler(webapp.RequestHandler):
     def get(self, format):
@@ -38,7 +30,7 @@ class FeedbackHandler(webapp.RequestHandler):
         else:
           login_url = users.create_login_url('/')
           self.response.out.write(template.render('templates/event.html', locals()))
-
+    
     def post(self, id):
         feedback = Feedback.get_by_id(int(id))
         user = users.get_current_user()
@@ -48,22 +40,24 @@ class FeedbackHandler(webapp.RequestHandler):
 
 class NewFeedbackHandler(webapp.RequestHandler):
     @util.login_required
-    def get(self):
+    def get(self, id):
         user = users.get_current_user()
+        event = Event.get_by_id(int(id))
         if user:
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
+        past_events = db.GqlQuery("SELECT * from Event WHERE end_time < :1", datetime.today())
         self.response.out.write(template.render('templates/new_feedback.html', locals()))
     
-    def post(self):
+    def post(self,id):
         user = users.get_current_user()
         feedback = Feedback(
             submitter = user,
-            event = event,
-            rating = rating,
-            comment = comment,
-            submitted = submitted
+            event = Event.get_by_id(int(id)),
+            rating = int(self.request.get('rating')),
+            comment = self.request.get('comment'),
+            submitted = datetime.today()
             )
         feedback.put()
         self.redirect('/events')

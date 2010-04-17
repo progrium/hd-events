@@ -2,20 +2,13 @@
 {% block content %}
 
 <div id="primary">
-	<h3>Event Feedback</h3>
-	
+	<h3>Event Feedback for {{event.name}}</h3>
+	<h4>{{event.start_date|date:"D d M, Y"}}</h4>
 	<form method="post" style="width: 49%;">
-		<h4>Event Name</h4>
-		<select name="event">
-			<option>--select event you attended--</option>
-			{for event in past_events}
-			<option>{{event.name}}</option>
-			{% endfor %}
-		</select>
 		<h4>Rating</h4>
 		<p>1 is great, 5 is terrible, 0 is did not attend</p>
 		<select name="rating">
-			<option>--select raing--</option>
+			<option>--select rating--</option>
 			<option>0</option>
 			<option>1</option>
 			<option>2</option>
@@ -26,7 +19,6 @@
 		<h4>Comment</h4>
 		<p>Optional, enter any specific feedback you may have for the organizer or Hacker Dojo</p>
 		<textarea rows="5" style="width: 300px;" name="comment"></textarea>
-		<input type="hidden" name="submitted" value="{today}">
 		<input type="submit" value="Submit your feedback" style="font-size: larger; margin: 5px;" />
 	</form>
 
