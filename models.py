@@ -67,12 +67,9 @@ class Event(db.Model):
     def is_canceled(self):
         return self.status == 'canceled'
 
-<<<<<<< HEAD:models.py
-=======
     def is_past(self):
         return self.end_time < datetime.today()
 
->>>>>>> 63e5c3116f611213af431bef31f998853fe82530:models.py
     def start_date(self):
         return self.start_time.date()
     
@@ -106,17 +103,8 @@ class Event(db.Model):
         return event
 
 class Feedback(db.Model):
-<<<<<<< HEAD:models.py
     submitter = db.UserProperty(auto_current_user_add=True)
     event = db.ReferenceProperty(Event)
     rating = db.IntegerProperty()
     comment = db.StringProperty(multiline=True)
     submitted = db.DateTimeProperty()
-=======
-    user = db.UserProperty(auto_current_user_add=True)
-    event = db.ReferenceProperty(Event)
-    rating = db.IntegerProperty()
-    comment = db.StringProperty(multiline=True)
-    created = db.DateTimeProperty(auto_now_add=True)
->>>>>>> 63e5c3116f611213af431bef31f998853fe82530:models.py
-
