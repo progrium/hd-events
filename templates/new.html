@@ -6,13 +6,26 @@ $(function() {
   var formvalues = $.cookie('formvalues');
   if (formvalues) {
     formvalues = JSON.parse(formvalues);
+    $('#type-select').append('<option>'+formvalues['type']+'</option>');
     for (var key in formvalues) {
       $('[name='+key+']').val(formvalues[key]);
     }
-    $('select[name=type]').val(formvalues['type']);
   }
-  //$.cookie('formvalues', null);
+  var formerror = $.cookie('formerror');
+  if (formerror) {
+    formerror = JSON.parse(formerror);
+    $('#error').append(formerror);
+    $.cookie('formerror', null);
+  }
+  
 });
+
+function showOther() {
+  $('#type-select').css('display','none');$('#type-text').css('display','inline');
+}
+function hideOther() {
+  $('#type-select').css('display','inline');$('#type-text').css('display','none');
+}
 </script>
 <style type="text/css">
 /* located in demo.css and creates a little calendar icon
@@ -85,6 +98,7 @@ nobr label { display: inline;}
     </ol>
 	</div>
 	
+	<span style="color: red; font-size: smaller;" id="error"></span>
 	<form method="post" style="width: 49%;">
 		<h4>Event Name</h4>
 		<input type="text" name="name" style="width: 300px; margin-left: 4px;" />
@@ -138,7 +152,7 @@ nobr label { display: inline;}
     <h4>Type of Event</h4>
     <table style="margin: 0px;"><tr>
 		  <td class="first"><label for="type">Category:</label> 
-         <select name="type" id="type-select" onchange="if(this.value=='Other...'){$('#type-select').css('display','none');$('#type-text').css('display','inline');$('#type-text').focus()}">
+         <select name="type" id="type-select" onchange="if(this.value=='Other...'){showOther();$('#type-text').focus()}">
             <option>Meetup</option>
             <option>Hackathon</option>
             <option>Conference</option>
@@ -146,7 +160,7 @@ nobr label { display: inline;}
             <option>Lecture</option>
             <option>Social</option>
             <option>Other...</option>
-          </select><input type="text" name="type" id="type-text" style="display: none;" size="15"></td>
+          </select><input type="text" id="type-text" onblur="$('#type-select').append('<option>'+this.value+'</option>');$('#type-select').val(this.value);hideOther();" style="display: none;" size="15"></td>
       <td><label for="estimated_size">Expected Size:</label>
         <input type="text" name="estimated_size" size="4" style="text-align: right;" /> <span>people</span></td>
     </tr></table>
