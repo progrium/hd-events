@@ -103,8 +103,8 @@ class Event(db.Model):
         return event
 
 class Feedback(db.Model):
-    submitter = db.UserProperty(auto_current_user_add=True)
+    user = db.UserProperty(auto_current_user_add=True)
     event = db.ReferenceProperty(Event)
     rating = db.IntegerProperty()
     comment = db.StringProperty(multiline=True)
-    submitted = db.DateTimeProperty()
+    created = db.DateTimeProperty(auto_now_add=True)
