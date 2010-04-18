@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div id="primary">
+  <a style="float: right;" href="/event/{{event.key.id}}-{{event.name|slugify}}">&larr; Back to event page</a>
+	<h3>Feedback for {{event.name}}</h3>
+	
+	<form method="post" style="width: 80%;">
+	  <p>Your feedback helps us improve the quality of events at Hacker Dojo. This data will go to the event organizer and Dojo staff.</p>
+		<strong>Rating:</strong>
+		<select name="rating">
+		  <option></option>
+			<option value="5">5 - Great</option>
+			<option value="4">4</option>
+			<option value="3">3 - Average</option>
+			<option value="2">2</option>
+			<option value="1">1 - Terrible</option>
+		</select><br />
+		<strong>Comments:</strong><br />
+		<textarea rows="5" style="width: 300px;" name="comment"></textarea><br />
+		<input type="submit" value="Submit your feedback" style="font-size: larger; margin: 5px;" />
+	</form>
+
+</div>
+
+
+{% endblock %}

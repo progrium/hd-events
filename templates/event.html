@@ -6,13 +6,13 @@
 
 <div id="primary">
 	<h3>{{event.name|title}}</h3>
-	<p>
+	{% if not event.is_past %}<p>
 		<form method="post" style="display: inline;">
 		  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
 		  {% if is_admin %}<input type="submit" name="state" value="Cancel" />{% endif %}
 		  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
 	  </form>
-	</p>
+	</p>{% endif %}
 	
 	<div class='b-block'><div class='b-label'>Status:</div><div class='b-data'>{{event.status|title}}</div></div>
 	<div class='b-block'><div class='b-label'>Start:</div><div class='b-data'>{{event.start_time|date:"l, F j"}} @ {{event.start_time|date:"g:iA"|lower}}</div></div>
