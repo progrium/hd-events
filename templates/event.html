@@ -6,13 +6,13 @@
 
 <div id="primary">
 	<h3>{{event.name|title}}</h3>
-	<p>
+	{% if not event.is_past %}<p>
 		<form method="post" style="display: inline;">
 		  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
 		  {% if is_admin %}<input type="submit" name="state" value="Cancel" />{% endif %}
 		  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
 	  </form>
-	</p>
+	</p>{% endif %}
 	
 	<div class='b-block'><div class='b-label'>Status:</div><div class='b-data'>{{event.status|title}}</div></div>
 	<div class='b-block'><div class='b-label'>Start:</div><div class='b-data'>{{event.start_time|date:"l, F j"}} @ {{event.start_time|date:"g:iA"|lower}}</div></div>
@@ -22,13 +22,24 @@
 	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}, {{event.contact_phone}}</div></div>
 	<div class='b-block'><div class='b-label'>URL:</div><div class='b-data'><a href='{{event.url}}'>{{event.url}}</a></div></div>
 	<div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'>{{event.fee}}</div></div>
-	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{% for room in event.rooms %}{{room}}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</div></div>
-	<div class='b-block'><div class='b-label'>Staff:</div><div class='b-data'>{% for staffer in event.staff %}{{staffer}}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</div></div>
+	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{{event.roomlist}}</div></div>
+	<div class='b-block'><div class='b-label'>Staff:</div><div class='b-data'>{{event.stafflist}}</div></div>
 	<div class='thin-border'></div>
 	<div class='b-block'><div class='b-label'>Details:</div><div class='b-data'>{{event.details}}</div></div>
 	<br />
 	<div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'>{{event.notes}}</div></div>
-  
+	{% if feedbacks.count %}
+	<div class='thin-border'></div>
+	<div id='secondary'>
+	<h3>Feedback</h3>
+	{% for feedback in feedbacks %}
+	<div class='b-block'><div class='b-label'>Submitted by:</div><div class='b-data'>{{feedback.user}} on {{feedback.created|date:"F j"}}</div></div>
+	<div class='b-block'><div class='b-label'>Rating:</div><div class='b-data'>{{feedback.rating}}</div></div>
+	<div class='b-block'><div class='b-label'>Comment:</div><div class='b-data'>{{feedback.comment}}</div></div>
+	<div class='thinner-border'></div>
+  {% endfor %}
+	</div>
+  {% endif %}
 </div>
 
 

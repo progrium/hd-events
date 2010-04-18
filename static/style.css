@@ -27,10 +27,14 @@ h3 a {text-decoration: none; color:#0000bb;}
 
 #content { border-top: 3px solid #d50025; background: #eee; padding: 10px; }
 #primary { background: white; width: 660px; padding: 10px; line-height: 1.5;}
+#secondary {font-size: 80%;}
+
 h4 { font-size: smaller; }
 
 .b-block {overflow: auto;}
 .b-label {float: left; width: 150px; font-weight: bold;}
 .b-data {float: left; width: 500px;}
 
-.thin-border {background-color: #ff0000; height: 2px; margin: 10px 0px;}
+.thin-border, .thinner-border {background-color: #ff0000; margin: 10px 0px;}
+.thin-border {height: 2px;}
+.thinner-border {height: 1px;}
