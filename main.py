@@ -57,6 +57,9 @@ def notify_owner_expiring(event):
 def notify_owner_expired(event):
     pass
 
+def set_cookie(headers, name, value):
+    headers.add_header('Set-Cookie', '%s=%s;' % (name, simplejson.dumps(value)))
+
 class Event(db.Model):
     status = db.StringProperty(required=True, default='pending', choices=set(
         ['pending', 'understaffed', 'approved', 'canceled', 'onhold', 'expired']))
@@ -264,40 +267,44 @@ class NewHandler(webapp.RequestHandler):
     
     def post(self):
         user = users.get_current_user()
-        start_time = datetime.strptime("%s %s:%s %s" % (
-            self.request.get('date'),
-            self.request.get('start_time_hour'),
-            self.request.get('start_time_minute'),
-            self.request.get('start_time_ampm')), "%d/%m/%Y %I:%M %p")
-        end_time = datetime.strptime("%s %s:%s %s" % (
-            self.request.get('date'),
-            self.request.get('end_time_hour'),
-            self.request.get('end_time_minute'),
-            self.request.get('end_time_ampm')), "%d/%m/%Y %I:%M %p")
-        if (end_time-start_time).days < 0:
-            raise ValueError("End time must be after start time")
-        else:
-            event = Event(
-                name = self.request.get('name'),
-                start_time = start_time,
-                end_time = end_time,
-                type = self.request.get('type'),
-                estimated_size = self.request.get('estimated_size'),
-                contact_name = self.request.get('contact_name'),
-                contact_phone = self.request.get('contact_phone'),
-                details = self.request.get('details'),
-                url = self.request.get('url'),
-                fee = self.request.get('fee'),
-                notes = self.request.get('notes'),
-                rooms = self.request.get_all('rooms'),
-                expired = datetime.today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
-                )
-            event.put()
-            notify_owner_confirmation(event)
-            if not event.is_staffed():
-                notify_staff_needed(event)
-            notify_new_event(event)
-            self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+        try:
+            start_time = datetime.strptime("%s %s:%s %s" % (
+                self.request.get('date'),
+                self.request.get('start_time_hour'),
+                self.request.get('start_time_minute'),
+                self.request.get('start_time_ampm')), "%d/%m/%Y %I:%M %p")
+            end_time = datetime.strptime("%s %s:%s %s" % (
+                self.request.get('date'),
+                self.request.get('end_time_hour'),
+                self.request.get('end_time_minute'),
+                self.request.get('end_time_ampm')), "%d/%m/%Y %I:%M %p")
+            if (end_time-start_time).days < 0:
+                raise ValueError("End time must be after start time")
+            else:
+                event = Event(
+                    name = self.request.get('name'),
+                    start_time = start_time,
+                    end_time = end_time,
+                    type = self.request.get('type'),
+                    estimated_size = self.request.get('estimated_size'),
+                    contact_name = self.request.get('contact_name'),
+                    contact_phone = self.request.get('contact_phone'),
+                    details = self.request.get('details'),
+                    url = self.request.get('url'),
+                    fee = self.request.get('fee'),
+                    notes = self.request.get('notes'),
+                    rooms = self.request.get_all('rooms'),
+                    expired = datetime.today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
+                    )
+                event.put()
+                notify_owner_confirmation(event)
+                if not event.is_staffed():
+                    notify_staff_needed(event)
+                notify_new_event(event)
+                self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+        except Exception:
+            set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
+            self.redirect('/new')
 
 def main():
     application = webapp.WSGIApplication([
