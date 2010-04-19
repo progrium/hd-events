@@ -7,7 +7,7 @@
 	<form method="post" style="width: 49%;">
 		<h4>Rating</h4>
 		<p>1 is great, 5 is terrible, 0 is did not attend</p>
-		<select name="rating">
+		<select name="rating" id='rating'>
 			<option>--select rating--</option>
 			<option>0</option>
 			<option>1</option>
@@ -15,11 +15,11 @@
 			<option>3</option>
 			<option>4</option>
 			<option>5</option>
-		</select>
+		</select> <span id="validation_result" class="result"></span>
 		<h4>Comment</h4>
 		<p>Optional, enter any specific feedback you may have for the organizer or Hacker Dojo</p>
 		<textarea rows="5" style="width: 300px;" name="comment"></textarea>
-		<input type="submit" value="Submit your feedback" style="font-size: larger; margin: 5px;" />
+		<input id="new_feedback" type="submit" value="XXXSubmit your feedback" style="font-size: larger; margin: 5px;" />
 	</form>
 
 </div>

@@ -20,7 +20,7 @@
 				  {% if event.is_canceled %}style="text-decoration: line-through;"{% endif %}
 				  href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a> 
 				{% if event.is_canceled %}<span style="color: white; font-size: x-small; padding: 2px; background: gray">canceled</span>
-				{% else %}(<a href="/event/feedback/{{event.key.id}}-{{event.name|slugify}}">Give your feedback</a>){% endif %}
+				{% else %}(<a href="/feedback/new/{{event.key.id}}">Give your feedback</a>){% endif %}
 			</td>
 		</tr>
 		{% endfor %}

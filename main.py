@@ -11,7 +11,6 @@ from datetime import datetime, timedelta, time, date
 from pytz import timezone
 import pytz
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME, FROM_ADDRESS
-import feedback_handlers
 
 # Hacker Dojo Domain API helper with caching
 def dojo(path):
@@ -185,28 +184,6 @@ class PendingHandler(webapp.RequestHandler):
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/pending.html', locals()))
 
-class FeedbackHandler(webapp.RequestHandler):
-    @util.login_required
-    def get(self, event_id):
-        user = users.get_current_user()
-        event = Event.get_by_id(int(event_id))
-        if user:
-            logout_url = users.create_logout_url('/')
-        else:
-            login_url = users.create_login_url('/')
-        self.response.out.write(template.render('templates/feedback.html', locals()))
-    
-    def post(self, event_id):
-        user = users.get_current_user()
-        event = Event.get_by_id(int(event_id))
-        feedback = Feedback(
-            event = event,
-            rating = int(self.request.get('rating')),
-            comment = self.request.get('comment'))
-        feedback.put()
-        self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
-
-
 class NewHandler(webapp.RequestHandler):
     @util.login_required
     def get(self):
@@ -259,6 +236,28 @@ class NewHandler(webapp.RequestHandler):
             set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
             self.redirect('/new')
 
+
+class FeedbackHandler(webapp.RequestHandler):
+    @util.login_required
+    def get(self, event_id):
+        user = users.get_current_user()
+        event = Event.get_by_id(int(event_id))
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        self.response.out.write(template.render('templates/feedback.html', locals()))
+
+    def post(self, event_id):
+        user = users.get_current_user()
+        event = Event.get_by_id(int(event_id))
+        feedback = Feedback(
+            event = event,
+            rating = int(self.request.get('rating')),
+            comment = self.request.get('comment'))
+        feedback.put()
+        self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+
 def main():
     application = webapp.WSGIApplication([
         ('/', ApprovedHandler),
@@ -270,7 +269,7 @@ def main():
         ('/event/(\d+).*', EventHandler),
         ('/expire', ExpireCron),
         ('/expiring', ExpireReminderCron),
-        ('/feedback/new/(\d+).*', feedback_handlers.NewFeedbackHandler) ],debug=True)
+        ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 
 if __name__ == '__main__':
