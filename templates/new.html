@@ -5,43 +5,6 @@ $(function() {
   $('.date-pick').datePicker();
 });
 </script>
-<style type="text/css">
-/* located in demo.css and creates a little calendar icon
- * instead of a text link for "Choose date"
- */
-a.dp-choose-date {
-	float: left;
-	width: 16px;
-	height: 16px;
-	padding: 0;
-	margin: 3px 3px 0;
-	display: block;
-	text-indent: -2000px;
-	overflow: hidden;
-	background: url(/static/calendar.png) no-repeat; 
-}
-a.dp-choose-date.dp-disabled {
-	background-position: 0 -20px;
-	cursor: default;
-}
-/* makes the input field shorter once the date picker code
- * has run (to allow space for the calendar icon
- */
-input.dp-applied {
-	width: 85px;
-	float: right;
-}
-
-table{ border-collapse: collapse; border-spacing: 0;}
-table td { padding-top: 8px; padding-left: 4px; }
-table td span { font-size: smaller;}
-table td.first { width: 110px; padding-right: 20px; }
-#terms h3 {margin-top: 10px; margin-bottom: 0px;}
-#terms div { font-size: 11px; }
-#terms ol { padding-left: 25px;}
-#terms li { margin-top: 10px;}
-nobr label { display: inline;}
-</style>
 		
 <div id="menu" style="float: right; margin: 10px; font-size: smaller;">
 	<a href="/">Approved</a> | <a href="/pending">Pending</a> | <strong>New Event</strong>
