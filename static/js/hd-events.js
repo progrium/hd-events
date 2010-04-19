@@ -8,4 +8,14 @@ $(function() {
     rounder(rndrs[r], 8, true);
   }
 
+  // Generic handler for retaining values when form submit errored out
+  var formvalues = $.cookie('formvalues');
+  if (formvalues) {
+    formvalues = JSON.parse(formvalues);
+    for (var key in formvalues) {
+      $('[name='+key+']').val(formvalues[key]);
+    }
+    $('select[name=type]').val(formvalues['type']);
+  }
+
 });
