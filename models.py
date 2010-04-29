@@ -1,6 +1,9 @@
 from google.appengine.ext import db
 from google.appengine.api import urlfetch, memcache, users, mail
+from icalendar import Event as CalendarEvent
 from datetime import datetime, timedelta, time, date
+from pytz import timezone
+import pytz
 
 ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
 GUESTS_PER_STAFF = 25
@@ -100,6 +103,7 @@ class Event(db.Model):
         event = CalendarEvent()
         event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
         event.add('dtstart', self.start_time.replace(tzinfo=timezone('US/Pacific')))
+        event.add('dtend', self.end_time.replace(tzinfo=timezone('US/Pacific')))
         return event
 
 class Feedback(db.Model):

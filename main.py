@@ -4,12 +4,10 @@ from google.appengine.api import urlfetch, memcache, users, mail
 
 from django.utils import simplejson
 from django.template.defaultfilters import slugify
-from icalendar import Calendar, Event as CalendarEvent
+from icalendar import Calendar
 import logging, urllib
 
 from datetime import datetime, timedelta, time, date
-from pytz import timezone
-import pytz
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME, FROM_ADDRESS
 
 # Hacker Dojo Domain API helper with caching
