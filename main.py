@@ -10,60 +10,10 @@ import logging, urllib
 from datetime import datetime, timedelta, time, date
 from pytz import timezone
 import pytz
-from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME, FROM_ADDRESS
 
-# Hacker Dojo Domain API helper with caching
-def dojo(path):
-    base_url = 'http://hackerdojo-domain.appspot.com'
-    cache_ttl = 3600
-    resp = memcache.get(path)
-    if not resp:
-        resp = urlfetch.fetch(base_url + path, deadline=10)
-        try:
-            resp = simplejson.loads(resp.content)
-        except Exception, e:
-            resp = []
-            cache_ttl = 10
-        memcache.set(path, resp, cache_ttl)
-    return resp
-
-def username(user):
-    return user.nickname().split('@')[0] if user else None
-
-def human_username(user):
-    if user:
-        nick = user.nickname().split('@')[0]
-        first = nick.split('.')[0]
-        last = nick.split('.')[1]
-        return first + ' ' + last
-    else:
-        return None
-
-def notify_owner_confirmation(event):
-    mail.send_mail(sender=FROM_ADDRESS, to=event.member.email(),
-        subject="Event application submitted",
-        body="""This is a confirmation that your event:\n\n%s\n\n
-has been submitted for approval. If staff is needed for your event, they
-will be notified of your request. You will be notified as soon as it's
-approved and on the calendar.""" % event.name)
-
-def notify_staff_needed(event):
-    pass
-
-def notify_new_event(event):
-    pass
-
-def notify_owner_approved(event):
-    pass
-
-def notify_owner_expiring(event):
-    pass
-
-def notify_owner_expired(event):
-    pass
-
-def set_cookie(headers, name, value):
-    headers.add_header('Set-Cookie', '%s=%s;' % (name, simplejson.dumps(value)))
+from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
+from utils import dojo, username, human_username, set_cookie
+from notices import *
 
 class ExpireCron(webapp.RequestHandler):    
     def post(self):
@@ -253,8 +203,15 @@ class NewHandler(webapp.RequestHandler):
                 if not event.is_staffed():
                     notify_staff_needed(event)
                 notify_new_event(event)
+                set_cookie(self.response.headers, 'formvalues', None)
                 self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
-        except Exception:
+        except Exception, e:
+            message = str(e)
+            if 'match format' in message:
+                message = "Date is required."
+            if message.startswith('Property'):
+                message = message[9:].replace('_', ' ').capitalize()
+            set_cookie(self.response.headers, 'formerror', message)
             set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
             self.redirect('/new')
 
