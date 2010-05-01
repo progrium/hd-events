@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<script type="text/javascript" charset="utf-8"> 
+<script type="text/javascript" charset="utf-8">
 $(function() {
   $('.date-pick').datePicker();
   var formvalues = $.cookie('formvalues');
@@ -17,7 +17,7 @@ $(function() {
     $('#error').append(formerror);
     $.cookie('formerror', null);
   }
-  
+
 
 });
 
@@ -28,14 +28,14 @@ function hideOther() {
   $('#type-select').css('display','inline');$('#type-text').css('display','none');
 }
 </script>
-		
+
 <div id="menu" style="float: right; margin: 10px; font-size: smaller;">
 	<a href="/">Approved</a> | <a href="/pending">Pending</a> | <strong>New Event</strong>
 </div>
 
 <div id="primary">
 	<h3>New Event</h3>
-	
+
 	<div style="width: 46%; float: right; font-size: smaller; padding: 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; background: #eee; line-height: normal;" id="terms">
 	  <h3 style="margin-top: 0px;">Member Terms as Event Host:</h3>
 	  <ol>
@@ -61,16 +61,15 @@ function hideOther() {
         <div>You are held responsible for damages to Dojo facilities and equipment during your event.</div></li>
     </ol>
 	</div>
-	
 	<span style="color: red; font-size: smaller;" id="error"></span>
 	<form method="post" style="width: 49%;">
 		<h4>Event Name</h4>
 		<input type="text" name="name" style="width: 300px; margin-left: 4px;" />
 		<h4>When</h4>
 		<table style="margin: 0px;"><tr>
-		  <td class="first"><label for="date">Date:</label> 
+		  <td class="first"><label for="date">Date:</label>
         <input name="date" id="date" readonly="readonly" onclick="$('.dp-choose-date').click()" class="date-pick" /></td>
-      <td><label for="start_time">Start Time:</label> 
+      <td><label for="start_time">Start Time:</label>
             <select name="start_time_hour">
               <option>1</option>
               <option>2</option>
@@ -86,15 +85,15 @@ function hideOther() {
               <option>12</option>
             </select>:<select name="start_time_minute">
               <option>00</option>
-	     <option>15</option>
+			  <option>15</option>
               <option>30</option>
-		<option>45</option>
+			  <option>45</option>
             </select> <select name="start_time_ampm">
                 <option>pm</option>
                 <option>am</option>
               </select></td>
     </tr><tr><td> </td>
-      <td><label for="end_time">End Time:</label> 
+      <td><label for="end_time">End Time:</label>
         <select name="end_time_hour">
           <option>1</option>
           <option>2</option>
@@ -109,20 +108,19 @@ function hideOther() {
           <option>11</option>
           <option>12</option>
         </select>:<select name="end_time_minute">
-          <option>00</option>
-	<option>15</option>
-          <option>30</option>
-	<option>45</option>
+		  <option>00</option>
+		  <option>15</option>
+		  <option>30</option>
+		  <option>45</option>
         </select> <select name="end_time_ampm">
             <option>pm</option>
             <option>am</option>
           </select></td></tr></table>
     <h4>Type of Event</h4>
     <table style="margin: 0px;"><tr>
-		  <td class="first"><label for="type">Category:</label> 
-         <select name="type" id="type-select" onchange="if(this.value=='Other...'){$('#type-select').css('display','none');$('#type-text').css('display','inline');$('#type-text').focus()}">
-        <option>Class</option>    
-	<option>Meetup</option>
+		  <td class="first"><label for="type">Category:</label>
+         <select name="type" id="type-select" onchange="if(this.value=='Other...'){showOther();$('#type-text').focus()}">
+            <option>Meetup</option>
             <option>Hackathon</option>
             <option>Conference</option>
             <option>Workshop</option>
@@ -150,7 +148,8 @@ function hideOther() {
 		  <tr><td><label for="fee">Entry Fee:</label>
 		    <input type="text" name="fee" size="8"/> <span style="color: gray; font-size: x-small;">Leave blank if free</span></td></tr>
 		  <tr><td><label for="details">Requested Rooms:</label>
-		    {% for room in rooms %}<nobr><input type="checkbox" id="room-{{room}}" name="rooms" value="{{room}}" /><label for="room-{{room}}">{{room|title}}</label></nobr> {% endfor %} </td></tr>
+		  <span style="font-size:10;">(Capacity in parentheses)</span><br />
+		    {% for room in rooms %}<nobr><input type="checkbox" id="room-{{room}}" name="rooms" value="{{room}}" /><label for="room-{{room}}">{{room.0|title}} ({{room.1}})</label></nobr> {% endfor %} </td></tr>
 		  <tr><td style="padding-top: 8px;"><label for="details">Special notes:</label>
 		    <textarea rows="3" style="width: 300px;" name="notes"></textarea></td></tr>
 		</tr></table>

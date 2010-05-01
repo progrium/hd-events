@@ -7,7 +7,16 @@ import pytz
 from utils import human_username
 import logging
 
-ROOM_OPTIONS = ['Cave', 'Deck', 'Savanna', '140b', 'Cubby 1', 'Cubby 2', 'Cubby 3', 'Upstairs Office', 'Front Area']
+ROOM_OPTIONS = (
+    ('Cave', 15),
+    ('Deck', 30),
+    ('Savanna', 120),
+    ('140b', 129),
+    ('Cubby 1', 2),
+    ('Cubby 2', 2),
+    ('Cubby 3', 2),
+    ('Upstairs Office', 2),
+    ('Front Area', 20))
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
 
