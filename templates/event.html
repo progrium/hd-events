@@ -15,11 +15,12 @@
 	</p>{% endif %}
 	
 	<div class='b-block'><div class='b-label'>Status:</div><div class='b-data'>{{event.status|title}}</div></div>
-	<div class='b-block'><div class='b-label'>Start:</div><div class='b-data'>{{event.start_time|date:"l, F j"}} @ {{event.start_time|date:"g:iA"|lower}}</div></div>
+	<div class='b-block'><div class='b-label'>Date:</div><div class='b-data'>{{event.start_time|date:"l, F j Y"}}</div></div>
+	<div class='b-block'><div class='b-label'>Time:</div><div class='b-data'>{{event.start_time|date:"g:iA"|lower}} to {{event.end_time|date:"g:iA"|lower}}</div></div>
 	<div class='b-block'><div class='b-label'>Member:</div><div class='b-data'>{{event.member}}</div></div>
 	<div class='b-block'><div class='b-label'>Type:</div><div class='b-data'>{{event.type}}</div></div>
 	<div class='b-block'><div class='b-label'>Estimated size:</div><div class='b-data'>{{event.estimated_size}}</div></div>
-	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}, {{event.contact_phone}}</div></div>
+	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}{% if is_staff %}, {{event.contact_phone}}{% endif %}</div></div>
 	<div class='b-block'><div class='b-label'>URL:</div><div class='b-data'><a href='{{event.url}}'>{{event.url}}</a></div></div>
 	<div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'>{{event.fee}}</div></div>
 	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{{event.roomlist}}</div></div>
@@ -27,7 +28,7 @@
 	<div class='thin-border'></div>
 	<div class='b-block'><div class='b-label'>Details:</div><div class='b-data'>{{event.details}}</div></div>
 	<br />
-	<div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'>{{event.notes}}</div></div>
+	{% if is_staff %}<div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'>{{event.notes}}</div></div>{% endif %}
 	{% if feedbacks.count %}
 	<div class='thin-border'></div>
 	<div id='secondary'>

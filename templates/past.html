@@ -6,7 +6,7 @@
 
 <div id="primary">
 	<h3>Past Events</h3>
-	<p style="font-size: smaller;"><a href='/'>Upcoming Events</a></p>
+	<a href="/" style="font-size: smaller; margin-top: -20px; display: block;">&larr; Upcoming Events</a>
 	
 	{% regroup events by start_date as grouped_events %}
 	{% for events in grouped_events %}

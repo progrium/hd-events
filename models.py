@@ -1,12 +1,14 @@
 from google.appengine.ext import db
 from google.appengine.api import urlfetch, memcache, users, mail
 from datetime import datetime, timedelta, time, date
+from icalendar import Calendar, Event as CalendarEvent
+from pytz import timezone
+from utils import human_username
 import logging
 
-ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
+ROOM_OPTIONS = ['Cave', 'Deck', 'Savanna', '140b', 'Cubby 1', 'Cubby 2', 'Cubby 3', 'Upstairs Office', 'Front Area']
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
-FROM_ADDRESS = "Dojo Events <no-reply@hackerdojo-events.appspotmail.com>"
 
 def to_sentence(aList):
     sentence = ', '.join([e for e in aList if aList.index(e) != len(aList) -1])
@@ -63,7 +65,10 @@ class Event(db.Model):
         return to_sentence(self.rooms)
 
     def is_staffed(self):
-        return len(self.staff) >= int(self.estimated_size) / GUESTS_PER_STAFF
+        return len(self.staff) >= self.staff_needed()
+
+    def staff_needed(self):
+        return int(self.estimated_size) / GUESTS_PER_STAFF
 
     def is_canceled(self):
         return self.status == 'canceled'
