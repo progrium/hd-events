@@ -86,7 +86,9 @@ function hideOther() {
               <option>12</option>
             </select>:<select name="start_time_minute">
               <option>00</option>
+	     <option>15</option>
               <option>30</option>
+		<option>45</option>
             </select> <select name="start_time_ampm">
                 <option>pm</option>
                 <option>am</option>
@@ -108,7 +110,9 @@ function hideOther() {
           <option>12</option>
         </select>:<select name="end_time_minute">
           <option>00</option>
+	<option>15</option>
           <option>30</option>
+	<option>45</option>
         </select> <select name="end_time_ampm">
             <option>pm</option>
             <option>am</option>
@@ -116,13 +120,15 @@ function hideOther() {
     <h4>Type of Event</h4>
     <table style="margin: 0px;"><tr>
 		  <td class="first"><label for="type">Category:</label> 
-         <select name="type" id="type-select" onchange="if(this.value=='Other...'){showOther();$('#type-text').focus()}">
-            <option>Meetup</option>
+         <select name="type" id="type-select" onchange="if(this.value=='Other...'){$('#type-select').css('display','none');$('#type-text').css('display','inline');$('#type-text').focus()}">
+        <option>Class</option>    
+	<option>Meetup</option>
             <option>Hackathon</option>
             <option>Conference</option>
             <option>Workshop</option>
             <option>Lecture</option>
             <option>Social</option>
+	<option>Dojo Admin</option>
             <option>Other...</option>
           </select><input type="text" id="type-text" onblur="$('#type-select').append('<option>'+this.value+'</option>');$('#type-select').val(this.value);hideOther();" style="display: none;" size="15"></td>
       <td><label for="estimated_size">Expected Size:</label>
