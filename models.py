@@ -3,6 +3,7 @@ from google.appengine.api import urlfetch, memcache, users, mail
 from datetime import datetime, timedelta, time, date
 from icalendar import Calendar, Event as CalendarEvent
 from pytz import timezone
+import pytz
 from utils import human_username
 import logging
 
@@ -114,6 +115,7 @@ class Event(db.Model):
         event = CalendarEvent()
         event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
         event.add('dtstart', self.start_time.replace(tzinfo=timezone('US/Pacific')))
+        event.add('dtend', self.end_time.replace(tzinfo=timezone('US/Pacific')))
         return event
 
 class Feedback(db.Model):
