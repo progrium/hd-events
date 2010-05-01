@@ -2,7 +2,7 @@ from google.appengine.ext import db
 from google.appengine.api import urlfetch, memcache, users, mail
 from datetime import datetime, timedelta, time, date
 
-ROOM_OPTIONS = ['cave', 'deck', 'savanna', '140b', 'cubby1', 'cubby2', 'cubby3', 'upstairs office', 'frontarea']
+ROOM_OPTIONS = ['Cave', 'Deck', 'Savanna', '140b', 'Cubby 1', 'Cubby 2', 'Cubby 3', 'Upstairs Office', 'Front Area']
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
 FROM_ADDRESS = "Dojo Events <no-reply@hackerdojo-events.appspotmail.com>"
