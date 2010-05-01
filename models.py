@@ -6,7 +6,7 @@ from pytz import timezone
 from utils import human_username
 import logging
 
-ROOM_OPTIONS = ['cave', 'deck', 'savanna', 'frontarea', '140b']
+ROOM_OPTIONS = ['Cave', 'Deck', 'Savanna', '140b', 'Cubby 1', 'Cubby 2', 'Cubby 3', 'Upstairs Office', 'Front Area']
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
 
