@@ -12,10 +12,12 @@ $(function() {
   var formvalues = $.cookie('formvalues');
   if (formvalues) {
     formvalues = JSON.parse(formvalues);
-    for (var key in formvalues) {
-      $('[name='+key+']').val(formvalues[key]);
+    if (formvalues != null) {
+      for (var key in formvalues) {
+        $('[name='+key+']').val(formvalues[key]);
+      }
+      $('select[name=type]').val(formvalues['type']);
     }
-    $('select[name=type]').val(formvalues['type']);
   }
 
 });

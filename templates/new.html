@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <script type="text/javascript" charset="utf-8">
+  
 $(function() {
-  $('.date-pick').datePicker();
+  $("#datepicker").datepicker({minDate: 0});
   var formvalues = $.cookie('formvalues');
   if (formvalues) {
     formvalues = JSON.parse(formvalues);
@@ -68,7 +69,7 @@ function hideOther() {
 		<h4>When</h4>
 		<table style="margin: 0px;"><tr>
 		  <td class="first"><label for="date">Date:</label>
-        <input name="date" id="date" readonly="readonly" onclick="$('.dp-choose-date').click()" class="date-pick" /></td>
+        <input name="date" id="datepicker" readonly="readonly"/></td>
       <td><label for="start_time">Start Time:</label>
             <select name="start_time_hour">
               <option>1</option>
@@ -149,7 +150,9 @@ function hideOther() {
 		    <input type="text" name="fee" size="8"/> <span style="color: gray; font-size: x-small;">Leave blank if free</span></td></tr>
 		  <tr><td><label for="details">Requested Rooms:</label>
 		  <span style="font-size:10;">(Capacity in parentheses)</span><br />
-		    {% for room in rooms %}<nobr><input type="checkbox" id="room-{{room}}" name="rooms" value="{{room}}" /><label for="room-{{room}}">{{room.0|title}} ({{room.1}})</label></nobr> {% endfor %} </td></tr>
+		    {% for room in rooms %}
+			  <nobr><input type="checkbox" id="room-{{room.0}}" name="rooms" value="{{room.0}}" /><label for="room-{{room.0}}">{{room.0|title}} ({{room.1}})</label></nobr>{% endfor %}
+		  </td></tr>
 		  <tr><td style="padding-top: 8px;"><label for="details">Special notes:</label>
 		    <textarea rows="3" style="width: 300px;" name="notes"></textarea></td></tr>
 		</tr></table>
