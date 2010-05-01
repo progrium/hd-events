@@ -6,7 +6,7 @@
 
 <div id="primary">
 	<h3>Upcoming Events</h3>
-	
+
 	{% regroup events by start_date as grouped_events %}
 	{% for events in grouped_events %}
 	<h4>{% ifequal events.grouper today.date %}<span style="text-decoration:underline;">Today</span> - {% endifequal %}{% ifequal events.grouper tomorrow.date %}<span style="text-decoration:underline;">Tomorrow</span> - {% endifequal %}{{events.grouper|date:"l, F j"}}</h4>
@@ -21,6 +21,7 @@
 		
 		<div style="font-size: x-small; float: right; color: gray;">{{ today }}</div>
 		<p style="font-size: x-small;">Alternative formats: <a href="/events.ics">iCal</a> | RSS | JSON</p>
+
 </div>
 
 
