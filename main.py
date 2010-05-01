@@ -15,7 +15,7 @@ from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFE
 from utils import dojo, username, human_username, set_cookie
 from notices import *
 
-class ExpireCron(webapp.RequestHandler):    
+class ExpireCron(webapp.RequestHandler):
     def post(self):
         # Expire events marked to expire today
         today = datetime.combine(datetime.today(), time())
@@ -61,7 +61,7 @@ class EventHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         self.response.out.write(template.render('templates/event.html', locals()))
-    
+
     def post(self, id):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
@@ -77,7 +77,7 @@ class EventHandler(webapp.RequestHandler):
                 event.cancel()
             if state.lower() == 'expire' and is_admin:
                 event.expire()
-            
+
             if event.status == 'approved':
                 notify_owner_approved(event)
         self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
@@ -143,7 +143,7 @@ class NewHandler(webapp.RequestHandler):
             login_url = users.create_login_url('/')
         rooms = ROOM_OPTIONS
         self.response.out.write(template.render('templates/new.html', locals()))
-    
+
     def post(self):
         user = users.get_current_user()
         try:
@@ -151,12 +151,12 @@ class NewHandler(webapp.RequestHandler):
                 self.request.get('date'),
                 self.request.get('start_time_hour'),
                 self.request.get('start_time_minute'),
-                self.request.get('start_time_ampm')), "%d/%m/%Y %I:%M %p")
+                self.request.get('start_time_ampm')), "%m/%d/%Y %I:%M %p")
             end_time = datetime.strptime("%s %s:%s %s" % (
                 self.request.get('date'),
                 self.request.get('end_time_hour'),
                 self.request.get('end_time_minute'),
-                self.request.get('end_time_ampm')), "%d/%m/%Y %I:%M %p")
+                self.request.get('end_time_ampm')), "%m/%d/%Y %I:%M %p")
             if (end_time-start_time).days < 0:
                 raise ValueError("End time must be after start time")
             else:
