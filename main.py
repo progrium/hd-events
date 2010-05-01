@@ -58,7 +58,6 @@ class EventHandler(webapp.RequestHandler):
             can_approve = (event.status in ['pending'] and is_admin)
             can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
             logout_url = users.create_logout_url('/')
-            feedbacks = event.feedback_set
         else:
             login_url = users.create_login_url('/')
         self.response.out.write(template.render('templates/event.html', locals()))
@@ -134,28 +133,6 @@ class PendingHandler(webapp.RequestHandler):
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/pending.html', locals()))
 
-class FeedbackHandler(webapp.RequestHandler):
-    @util.login_required
-    def get(self, event_id):
-        user = users.get_current_user()
-        event = Event.get_by_id(int(event_id))
-        if user:
-            logout_url = users.create_logout_url('/')
-        else:
-            login_url = users.create_login_url('/')
-        self.response.out.write(template.render('templates/feedback.html', locals()))
-    
-    def post(self, event_id):
-        user = users.get_current_user()
-        event = Event.get_by_id(int(event_id))
-        feedback = Feedback(
-            event = event,
-            rating = int(self.request.get('rating')),
-            comment = self.request.get('comment'))
-        feedback.put()
-        self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
-
-
 class NewHandler(webapp.RequestHandler):
     @util.login_required
     def get(self):
@@ -215,6 +192,35 @@ class NewHandler(webapp.RequestHandler):
             set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
             self.redirect('/new')
 
+
+class FeedbackHandler(webapp.RequestHandler):
+    @util.login_required
+    def get(self, event_id):
+        user = users.get_current_user()
+        event = Event.get_by_id(int(event_id))
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        self.response.out.write(template.render('templates/feedback.html', locals()))
+
+    def post(self, event_id):
+        user = users.get_current_user()
+        event = Event.get_by_id(int(event_id))
+        try:
+            if self.request.get('rating'):
+                feedback = Feedback(
+                    event = event,
+                    rating = int(self.request.get('rating')),
+                    comment = self.request.get('comment'))
+                feedback.put()
+                self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+            else:
+                raise ValueError("Please select a rating")
+        except Exception:
+            set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
+            self.redirect('/feedback/new/'+event_id)
+
 def main():
     application = webapp.WSGIApplication([
         ('/', ApprovedHandler),
@@ -224,9 +230,9 @@ def main():
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
         ('/event/(\d+).*', EventHandler),
-        ('/event/feedback/(\d+).*', FeedbackHandler),
-        ('/cron/expire', ExpireCron),
-        ('/cron/expiring', ExpireReminderCron),  ],debug=True)
+        ('/expire', ExpireCron),
+        ('/expiring', ExpireReminderCron),
+        ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 
 if __name__ == '__main__':
