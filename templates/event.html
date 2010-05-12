@@ -13,6 +13,14 @@
 		  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
 	  </form>
 	</p>{% endif %}
+
+	{% if not event.is_staffed %}<p>
+		<span style="color: red; font-weight: bold">This event is currently understaffed.</span><br/>
+		Due to this size of the event, at least {{ event.staff_needed }} Dojo staff member{{ event.staff_needed|pluralize }} must volunteer to staff it.  It will not appear on the public calendar until {% if not event.is_approved %}it has been approved and {% endif %}enough staff volunteer.
+	</p>{% else %}{% if not event.is_approved %}<p>
+		<span style="color: red; font-weight: bold">This event is not yet visible.</span><br/>
+		This event will not appear on the public calendar until it has been approved. If this does not happen soon, contact <a href="email:events@hackerdojo.com">events@hackerdojo.com</a> for assistance.
+        </p>{% endif %}{% endif %}
 	
 	<div class='b-block'><div class='b-label'>Status:</div><div class='b-data'>{{event.status|title}}</div></div>
 	<div class='b-block'><div class='b-label'>Date:</div><div class='b-data'>{{event.start_time|date:"l, F j Y"}}</div></div>

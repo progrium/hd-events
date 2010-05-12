@@ -80,6 +80,11 @@ class Event(db.Model):
     def staff_needed(self):
         return int(self.estimated_size) / GUESTS_PER_STAFF
 
+    def is_approved(self):
+        '''Has the events team approved the event?  Note: This does not
+        necessarily imply that the event is in state 'approved'.'''
+        return self.status in ('understaffed', 'approved', 'cancelled')
+
     def is_canceled(self):
         return self.status == 'canceled'
 
