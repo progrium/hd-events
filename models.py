@@ -32,7 +32,7 @@ def to_name_list(aList):
 
 class Event(db.Model):
     status = db.StringProperty(required=True, default='pending', choices=set(
-        ['pending', 'understaffed', 'approved', 'canceled', 'onhold', 'expired']))
+        ['pending', 'understaffed', 'approved', 'canceled', 'onhold', 'expired', 'deleted']))
     member = db.UserProperty(auto_current_user_add=True)
     name = db.StringProperty(required=True)
     start_time = db.DateTimeProperty(required=True)
@@ -88,6 +88,9 @@ class Event(db.Model):
     def is_canceled(self):
         return self.status == 'canceled'
 
+    def is_deleted(self):
+        return self.status == 'deleted'
+
     def is_past(self):
         return self.end_time < datetime.today()
 
@@ -110,6 +113,18 @@ class Event(db.Model):
         self.status = 'canceled'
         self.put()
         logging.info('%s cancelled %s' % (user.nickname, self.name))
+
+    def delete(self):
+        user = users.get_current_user()
+        self.status = 'deleted'
+        self.put()
+        logging.info('%s deleted %s' % (user.nickname, self.name))
+
+    def undelete(self):
+        user = users.get_current_user()
+        self.status = 'pending'
+        self.put()
+        logging.info('%s undeleted %s' % (user.nickname, self.name))
 
     def expire(self):
         user = users.get_current_user()

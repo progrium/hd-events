@@ -75,6 +75,10 @@ class EventHandler(webapp.RequestHandler):
                 event.add_staff(user)
             if state.lower() == 'cancel' and is_admin:
                 event.cancel()
+            if state.lower() == 'delete' and is_admin:
+                event.delete()
+            if state.lower() == 'undelete' and is_admin:
+                event.undelete()
             if state.lower() == 'expire' and is_admin:
                 event.expire()
 
