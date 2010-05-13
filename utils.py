@@ -22,7 +22,7 @@ def username(user):
 def human_username(user):
     if user:
         nick = user.nickname().split('@')[0]
-        return nick.replace('.', ' ').capitalize()
+        return nick.replace('.', ' ').title()
     else:
         return None
 
