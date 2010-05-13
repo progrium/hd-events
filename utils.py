@@ -1,5 +1,9 @@
 from google.appengine.api import urlfetch, memcache
 from django.utils import simplejson
+from datetime import datetime
+import pytz
+
+LOCAL_TZ = 'America/Los_Angeles'
 
 # Hacker Dojo Domain API helper with caching
 def dojo(path):
@@ -28,3 +32,9 @@ def human_username(user):
 
 def set_cookie(headers, name, value):
     headers.add_header('Set-Cookie', '%s=%s;' % (name, simplejson.dumps(value)))
+
+def local_today():
+    '''Return a datetime object representing the start of today, local time.'''
+    utc_now = pytz.utc.localize(datetime.utcnow())
+    local_now = utc_now.astimezone(pytz.timezone(LOCAL_TZ))
+    return datetime(*local_now.timetuple()[:3])

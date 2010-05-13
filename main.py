@@ -7,18 +7,16 @@ from django.template.defaultfilters import slugify
 from icalendar import Calendar
 import logging, urllib
 
-from datetime import datetime, timedelta, time, date
-from pytz import timezone
-import pytz
+from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
-from utils import dojo, username, human_username, set_cookie
+from utils import dojo, username, human_username, set_cookie, local_today
 from notices import *
 
 class ExpireCron(webapp.RequestHandler):
     def post(self):
         # Expire events marked to expire today
-        today = datetime.combine(datetime.today(), time())
+        today = local_today()
         events = Event.all() \
             .filter('status IN', ['pending', 'understaffed']) \
             .filter('expired >=', today) \
@@ -30,7 +28,7 @@ class ExpireCron(webapp.RequestHandler):
 class ExpireReminderCron(webapp.RequestHandler):
     def post(self):
         # Find events expiring in 10 days to warn owner
-        ten_days = datetime.combine(datetime.today(), time()) + timedelta(days=10)
+        ten_days = local_today() + timedelta(days=10)
         events = Event.all() \
             .filter('status IN', ['pending', 'understaffed']) \
             .filter('expired >=', ten_days) \
@@ -93,7 +91,7 @@ class ApprovedHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        today = datetime.today()
+        today = local_today()
         events = Event.get_approved_list()
         tomorrow = today + timedelta(days=1)
         self.response.out.write(template.render('templates/approved.html', locals()))
@@ -107,7 +105,7 @@ class MyEventsHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         events = Event.all().filter('member = ', user).order('start_time')
-        today = datetime.today()
+        today = local_today()
         tomorrow = today + timedelta(days=1)
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/myevents.html', locals()))
@@ -119,7 +117,7 @@ class PastHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        today = datetime.today()
+        today = local_today()
         events = Event.all().filter('start_time < ', today).order('-start_time')
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
@@ -132,7 +130,7 @@ class PendingHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         events = Event.get_pending_list()
-        today = datetime.today()
+        today = local_today()
         tomorrow = today + timedelta(days=1)
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/pending.html', locals()))
@@ -177,7 +175,7 @@ class NewHandler(webapp.RequestHandler):
                     fee = self.request.get('fee'),
                     notes = self.request.get('notes'),
                     rooms = self.request.get_all('rooms'),
-                    expired = datetime.today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
+                    expired = local_today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
                     )
                 event.put()
                 notify_owner_confirmation(event)
