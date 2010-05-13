@@ -1,10 +1,8 @@
 from google.appengine.ext import db
 from google.appengine.api import urlfetch, memcache, users, mail
-from datetime import datetime, timedelta, time, date
+from datetime import datetime, timedelta
 from icalendar import Calendar, Event as CalendarEvent
-from pytz import timezone
-import pytz
-from utils import human_username
+from utils import human_username, local_today
 import logging
 
 ROOM_OPTIONS = (
@@ -57,14 +55,14 @@ class Event(db.Model):
     @classmethod
     def get_approved_list(cls):
         return cls.all() \
-            .filter('start_time >', datetime.today()) \
+            .filter('start_time >', local_today()) \
             .filter('status IN', ['approved', 'canceled']) \
             .order('start_time')
 
     @classmethod
     def get_pending_list(cls):
         return cls.all() \
-            .filter('start_time >', datetime.today()) \
+            .filter('start_time >', local_today()) \
             .filter('status IN', ['pending', 'understaffed', 'onhold', 'expired']) \
             .order('start_time')
 
@@ -92,7 +90,7 @@ class Event(db.Model):
         return self.status == 'deleted'
 
     def is_past(self):
-        return self.end_time < datetime.today()
+        return self.end_time < local_today()
 
     def start_date(self):
         return self.start_time.date()
