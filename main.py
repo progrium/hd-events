@@ -94,6 +94,9 @@ class ApprovedHandler(webapp.RequestHandler):
         today = local_today()
         events = Event.get_approved_list()
         tomorrow = today + timedelta(days=1)
+        whichbase = 'base.html'
+        if self.request.get('base'):
+          whichbase = self.request.get('base') + ".html"
         self.response.out.write(template.render('templates/approved.html', locals()))
 
 class MyEventsHandler(webapp.RequestHandler):

@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <title>Hacker Dojo Events</title>
+    <link href="/static/style.css" type="text/css" rel="stylesheet" />
+    <link type="text/css" href="/static/css/blitzer/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
+    <style>#menu {display:none;}
+    #primary, #wrapper, #menu, #content, body {margin:0; width:100%; overflow:hidden;}
+    #content {padding:0; border-top:none;}
+    #primary {padding:0 margin:1em;}
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </body>
+</html>
