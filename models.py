@@ -76,7 +76,11 @@ class Event(db.Model):
         return len(self.staff) >= self.staff_needed()
 
     def staff_needed(self):
+      if self.estimated_size.isdigit():
         return int(self.estimated_size) / GUESTS_PER_STAFF
+      else:
+        # invalid data; just return something reasonable
+        return 2
 
     def is_approved(self):
         '''Has the events team approved the event?  Note: This does not
