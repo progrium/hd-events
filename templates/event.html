@@ -13,16 +13,17 @@
 		  (This will return the event to the &ldquo;pending&rdquo; status.)
 		{% else %}
 		  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
-		  {% if is_admin %}<input type="submit" name="state" value="Cancel" />{% endif %}
+		  {% if should_show_cancel %}<input type="submit" name="state" value="Cancel" />{% endif %}
 		  {% if is_admin %}<input type="submit" name="state" value="Delete" />{% endif %}
 		  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
+		  {% if can_unstaff %}<input type="submit" name="state" value="Unstaff" />{% endif %}
 		{% endif %}
 	  </form>
 	</p>{% endif %}
 
 	{% if not event.is_staffed %}<p>
 		<span style="color: red; font-weight: bold">This event is currently understaffed.</span><br/>
-		Due to this size of the event, at least {{ event.staff_needed }} Dojo staff member{{ event.staff_needed|pluralize }} must volunteer to staff it.  It will not appear on the public calendar until {% if not event.is_approved %}it has been approved and {% endif %}enough staff volunteer.
+		Due to this size of the event, at least {{ event.staff_needed }} more Dojo member{{ event.staff_needed|pluralize }} must volunteer to staff it.  It will not appear on the public calendar until {% if not event.is_approved %}it has been approved and {% endif %}enough people volunteer.
 	</p>{% else %}{% if not event.is_approved %}<p>
 		<span style="color: red; font-weight: bold">This event is not yet visible.</span><br/>
 		This event will not appear on the public calendar until it has been approved. If this does not happen soon, contact <a href="email:events@hackerdojo.com">events@hackerdojo.com</a> for assistance.
@@ -34,7 +35,7 @@
 	<div class='b-block'><div class='b-label'>Member:</div><div class='b-data'>{{event.member}}</div></div>
 	<div class='b-block'><div class='b-label'>Type:</div><div class='b-data'>{{event.type}}</div></div>
 	<div class='b-block'><div class='b-label'>Estimated size:</div><div class='b-data'>{{event.estimated_size}}</div></div>
-	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}{% if is_staff %}, {{event.contact_phone}}{% endif %}</div></div>
+	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}{% if user %}, {{event.contact_phone}}{% endif %}</div></div>
 	<div class='b-block'><div class='b-label'>URL:</div><div class='b-data'><a href='{{event.url}}'>{{event.url}}</a></div></div>
 	<div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'>{{event.fee}}</div></div>
 	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{{event.roomlist}}</div></div>
@@ -42,7 +43,7 @@
 	<div class='thin-border'></div>
 	<div class='b-block'><div class='b-label'>Details:</div><div class='b-data'>{{event.details}}</div></div>
 	<br />
-	{% if is_staff %}<div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'>{{event.notes}}</div></div>{% endif %}
+	<div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'>{{event.notes}}</div></div>
 	{% if event.feedback_set.count %}
 	<div class='thin-border'></div>
 	<div id='secondary'>

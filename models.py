@@ -2,8 +2,9 @@ from google.appengine.ext import db
 from google.appengine.api import urlfetch, memcache, users, mail
 from datetime import datetime, timedelta
 from icalendar import Calendar, Event as CalendarEvent
-from utils import human_username, local_today
+from utils import human_username, local_today, to_sentence_list
 import logging
+import pytz
 
 ROOM_OPTIONS = (
     ('Cave', 15),
@@ -18,35 +19,25 @@ ROOM_OPTIONS = (
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
 
-def to_sentence(aList):
-    sentence = ', '.join([e for e in aList if aList.index(e) != len(aList) -1])
-    if len(aList) > 1: sentence = '%s and %s' % (sentence, aList[-1])
-    return sentence
-
-def to_name_list(aList):
-    sentence = ', '.join([human_username(e) for e in aList if aList.index(e) != len(aList) -1])
-    if len(aList) > 1: sentence = '%s and %s' % (sentence, human_username(aList[-1]))
-    return sentence
-
 class Event(db.Model):
-    status = db.StringProperty(required=True, default='pending', choices=set(
-        ['pending', 'understaffed', 'approved', 'canceled', 'onhold', 'expired', 'deleted']))
-    member = db.UserProperty(auto_current_user_add=True)
-    name = db.StringProperty(required=True)
-    start_time = db.DateTimeProperty(required=True)
-    end_time = db.DateTimeProperty()
-    staff = db.ListProperty(users.User)
-    rooms = db.StringListProperty() #choices=set(ROOM_OPTIONS)
+    status  = db.StringProperty(required=True, default='pending', choices=set(
+                ['pending', 'understaffed', 'approved', 'canceled', 'onhold', 'expired', 'deleted']))
+    member  = db.UserProperty(auto_current_user_add=True)
+    name        = db.StringProperty(required=True)
+    start_time  = db.DateTimeProperty(required=True)
+    end_time    = db.DateTimeProperty()
+    staff       = db.ListProperty(users.User)
+    rooms       = db.StringListProperty() #choices=set(ROOM_OPTIONS)
 
-    details = db.StringProperty()
-    url = db.StringProperty()
-    fee = db.StringProperty()
-    notes = db.StringProperty()
-    type = db.StringProperty(required=True)
+    details     = db.TextProperty()
+    url         = db.StringProperty()
+    fee         = db.StringProperty()
+    notes       = db.TextProperty()
+    type        = db.StringProperty(required=True)
     estimated_size = db.StringProperty(required=True)
 
-    contact_name = db.StringProperty(required=True)
-    contact_phone = db.StringProperty(required=True)
+    contact_name    = db.StringProperty(required=True)
+    contact_phone   = db.StringProperty(required=True)
 
     expired = db.DateTimeProperty()
     created = db.DateTimeProperty(auto_now_add=True)
@@ -67,20 +58,24 @@ class Event(db.Model):
             .order('start_time')
 
     def stafflist(self):
-        return to_name_list(self.staff)
+        return to_sentence_list(map(human_username, self.staff))
 
     def roomlist(self):
-        return to_sentence(self.rooms)
+        return to_sentence_list(self.rooms)
 
     def is_staffed(self):
         return len(self.staff) >= self.staff_needed()
 
     def staff_needed(self):
+      if self.estimated_size.isdigit():
         return int(self.estimated_size) / GUESTS_PER_STAFF
+      else:
+        # invalid data; just return something reasonable
+        return 2
 
     def is_approved(self):
-        '''Has the events team approved the event?  Note: This does not
-        necessarily imply that the event is in state 'approved'.'''
+        """Has the events team approved the event?  Note: This does not
+        necessarily imply that the event is in state 'approved'."""
         return self.status in ('understaffed', 'approved', 'cancelled')
 
     def is_canceled(self):
@@ -110,7 +105,19 @@ class Event(db.Model):
         user = users.get_current_user()
         self.status = 'canceled'
         self.put()
-        logging.info('%s cancelled %s' % (user.nickname, self.name))
+        logging.info('%s canceled %s' % (user.nickname, self.name))
+
+    def delete(self):
+        user = users.get_current_user()
+        self.status = 'deleted'
+        self.put()
+        logging.info('%s deleted %s' % (user.nickname, self.name))
+
+    def undelete(self):
+        user = users.get_current_user()
+        self.status = 'pending'
+        self.put()
+        logging.info('%s undeleted %s' % (user.nickname, self.name))
 
     def delete(self):
         user = users.get_current_user()
@@ -138,16 +145,42 @@ class Event(db.Model):
         self.put()
         logging.info('%s staffed %s' % (user.nickname, self.name))
 
+    def remove_staff(self, user):
+        self.staff.remove(user)
+        if not self.is_staffed() and self.status == 'approved':
+            self.status = 'understaffed'
+        self.put()
+        logging.info('%s staffed %s' % (user.nickname, self.name))
+
     def to_ical(self):
         event = CalendarEvent()
         event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
-        event.add('dtstart', self.start_time.replace(tzinfo=timezone('US/Pacific')))
-        event.add('dtend', self.end_time.replace(tzinfo=timezone('US/Pacific')))
+        event.add('dtstart', self.start_time.replace(tzinfo=pytz.timezone('US/Pacific')))
+        event.add('dtend', self.end_time.replace(tzinfo=pytz.timezone('US/Pacific')))
         return event
 
+    def to_dict(self, summarize=False):
+        d = dict()
+        if summarize:
+            props = ['member', 'start_time', 'name', 'type', 'estimated_size']
+        else:
+            props = Event.properties().keys()
+        for prop in props:
+            if prop == 'member':
+                d[prop] = getattr(self, prop).email()
+            elif prop == 'staff':
+                d[prop] = map(lambda x: x.email(), getattr(self, prop))
+            elif prop in ['start_time', 'end_time', 'created', 'expired', 'updated']:
+                if getattr(self, prop):
+                    d[prop] = getattr(self, prop).replace(tzinfo=pytz.timezone('US/Pacific')).strftime('%Y-%m-%dT%H:%M:%S')
+            else:
+                d[prop] = getattr(self, prop)
+        d['id'] = self.key().id()
+        return d
+
 class Feedback(db.Model):
-    user = db.UserProperty(auto_current_user_add=True)
-    event = db.ReferenceProperty(Event)
-    rating = db.IntegerProperty()
+    user    = db.UserProperty(auto_current_user_add=True)
+    event   = db.ReferenceProperty(Event)
+    rating  = db.IntegerProperty()
     comment = db.StringProperty(multiline=True)
     created = db.DateTimeProperty(auto_now_add=True)

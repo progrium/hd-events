@@ -1,3 +1,4 @@
+import cgi
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import util, template
 from google.appengine.api import urlfetch, memcache, users, mail
@@ -5,8 +6,8 @@ from google.appengine.api import urlfetch, memcache, users, mail
 from django.utils import simplejson
 from django.template.defaultfilters import slugify
 from icalendar import Calendar
-import logging, urllib
-
+import logging, urllib, os
+from pprint import pprint
 from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
@@ -45,33 +46,50 @@ class EventsHandler(webapp.RequestHandler):
                 cal.add_component(event.to_ical())
             self.response.headers['content-type'] = 'text/calendar'
             self.response.out.write(cal.as_string())
+        elif format == 'json':
+            self.response.headers['content-type'] = 'application/json'
+            events = map(lambda x: x.to_dict(summarize=True), Event.get_approved_list())
+            self.response.out.write(simplejson.dumps(events))
 
 class EventHandler(webapp.RequestHandler):
     def get(self, id):
         event = Event.get_by_id(int(id))
-        user = users.get_current_user()
-        if user:
-            is_admin = username(user) in dojo('/groups/events')
-            is_staff = username(user) in dojo('/groups/staff')
-            can_approve = (event.status in ['pending'] and is_admin)
-            can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
-            logout_url = users.create_logout_url('/')
+        if self.request.path.endswith('json'):
+            self.response.headers['content-type'] = 'application/json'
+            self.response.out.write(simplejson.dumps(event.to_dict()))
         else:
-            login_url = users.create_login_url('/')
-        self.response.out.write(template.render('templates/event.html', locals()))
+            user = users.get_current_user()
+            if user:
+                is_admin = username(user) in dojo('/groups/events')
+                is_staff = username(user) in dojo('/groups/staff')
+                can_approve = (event.status in ['pending'] and is_admin and not user == event.member)
+                can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
+                can_unstaff = (not event.status in ['canceled', 'deleted'] and is_staff and user in event.staff)
+                logout_url = users.create_logout_url('/')
+            else:
+                login_url = users.create_login_url('/')
+            event.details = db.Text(event.details.replace("\n","<br/>"))
+            event.notes = db.Text(event.notes.replace("\n","<br/>"))
+            should_show_cancel = is_admin or user == event.member
+            self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
         is_admin = username(user) in dojo('/groups/events')
-        is_staff = username(user) in dojo('/groups/staff')
+        is_staff = True
         state = self.request.get('state')
         if state:
             if state.lower() == 'approve' and is_admin:
                 event.approve()
             if state.lower() == 'staff' and is_staff:
                 event.add_staff(user)
-            if state.lower() == 'cancel' and is_admin:
+            if state.lower() == 'unstaff' and is_staff:
+                event.remove_staff(user)
+                # send notification is state changed to understaffed
+                if event.status == 'understaffed':
+                    notify_unapproved_unstaff_event(event)
+            if state.lower() == 'cancel' and is_admin or event.member == user:
                 event.cancel()
             if state.lower() == 'delete' and is_admin:
                 event.delete()
@@ -125,6 +143,12 @@ class PastHandler(webapp.RequestHandler):
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
 
+class CronBugOwnersHandler(webapp.RequestHandler):
+    def get(self):
+        events = Event.get_pending_list()
+        for e in events:
+          bug_owner_pending(e)
+
 class PendingHandler(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -162,6 +186,10 @@ class NewHandler(webapp.RequestHandler):
                 self.request.get('end_time_hour'),
                 self.request.get('end_time_minute'),
                 self.request.get('end_time_ampm')), "%m/%d/%Y %I:%M %p")
+            if not self.request.get('estimated_size').isdigit():
+              raise ValueError("Estimated number of people must be a number")
+            if not int(self.request.get('estimated_size')) > 0:
+              raise ValueError("Estimated number of people must be greater then zero")
             if (end_time-start_time).days < 0:
                 raise ValueError("End time must be after start time")
             if ( not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
@@ -175,10 +203,10 @@ class NewHandler(webapp.RequestHandler):
                     estimated_size = self.request.get('estimated_size'),
                     contact_name = self.request.get('contact_name'),
                     contact_phone = self.request.get('contact_phone'),
-                    details = self.request.get('details'),
+                    details = cgi.escape(self.request.get('details')),
                     url = self.request.get('url'),
                     fee = self.request.get('fee'),
-                    notes = self.request.get('notes'),
+                    notes = cgi.escape(self.request.get('notes')),
                     rooms = self.request.get_all('rooms'),
                     expired = local_today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
                     )
@@ -234,9 +262,11 @@ def main():
         ('/events\.(.+)', EventsHandler),
         ('/past', PastHandler),
         ('/pending', PendingHandler),
+        ('/cronbugowners', CronBugOwnersHandler),
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
         ('/event/(\d+).*', EventHandler),
+        ('/event/(\d+)\.json', EventHandler),
         ('/expire', ExpireCron),
         ('/expiring', ExpireReminderCron),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
