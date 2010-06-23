@@ -38,10 +38,10 @@ class Event(db.Model):
     staff = db.ListProperty(users.User)
     rooms = db.StringListProperty() #choices=set(ROOM_OPTIONS)
 
-    details = db.StringProperty()
+    details = db.StringProperty(multiline=True)
     url = db.StringProperty()
     fee = db.StringProperty()
-    notes = db.StringProperty()
+    notes = db.StringProperty(multiline=True)
     type = db.StringProperty(required=True)
     estimated_size = db.StringProperty(required=True)
 

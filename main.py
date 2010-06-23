@@ -1,3 +1,4 @@
+import cgi
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import util, template
 from google.appengine.api import urlfetch, memcache, users, mail
@@ -58,6 +59,8 @@ class EventHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
+        event.details = event.details.replace("\n","<br/>")
+        event.notes = event.notes.replace("\n","<br/>")
         self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):
@@ -173,10 +176,10 @@ class NewHandler(webapp.RequestHandler):
                     estimated_size = self.request.get('estimated_size'),
                     contact_name = self.request.get('contact_name'),
                     contact_phone = self.request.get('contact_phone'),
-                    details = self.request.get('details'),
+                    details = cgi.escape(self.request.get('details')),
                     url = self.request.get('url'),
                     fee = self.request.get('fee'),
-                    notes = self.request.get('notes'),
+                    notes = cgi.escape(self.request.get('notes')),
                     rooms = self.request.get_all('rooms'),
                     expired = local_today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
                     )
