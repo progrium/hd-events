@@ -114,7 +114,7 @@ class ApprovedHandler(webapp.RequestHandler):
         tomorrow = today + timedelta(days=1)
         whichbase = 'base.html'
         if self.request.get('base'):
-          whichbase = self.request.get('base') + ".html"
+            whichbase = self.request.get('base') + ".html"
         self.response.out.write(template.render('templates/approved.html', locals()))
 
 class MyEventsHandler(webapp.RequestHandler):
@@ -196,18 +196,18 @@ class NewHandler(webapp.RequestHandler):
                 raise ValueError( "Phone number does not appear to be valid" )
             else:
                 event = Event(
-                    name = self.request.get('name'),
+                    name = cgi.escape(self.request.get('name')),
                     start_time = start_time,
                     end_time = end_time,
-                    type = self.request.get('type'),
-                    estimated_size = self.request.get('estimated_size'),
-                    contact_name = self.request.get('contact_name'),
-                    contact_phone = self.request.get('contact_phone'),
+                    type = cgi.escape(self.request.get('type')),
+                    estimated_size = cgi.escape(self.request.get('estimated_size')),
+                    contact_name = cgi.escape(self.request.get('contact_name')),
+                    contact_phone = cgi.escape(self.request.get('contact_phone')),
                     details = cgi.escape(self.request.get('details')),
-                    url = self.request.get('url'),
-                    fee = self.request.get('fee'),
+                    url = cgi.escape(self.request.get('url')),
+                    fee = cgi.escape(self.request.get('fee')),
                     notes = cgi.escape(self.request.get('notes')),
-                    rooms = self.request.get_all('rooms'),
+                    rooms = cgi.escape(self.request.get_all('rooms')),
                     expired = local_today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
                     )
                 event.put()
@@ -247,7 +247,7 @@ class FeedbackHandler(webapp.RequestHandler):
                 feedback = Feedback(
                     event = event,
                     rating = int(self.request.get('rating')),
-                    comment = self.request.get('comment'))
+                    comment = cgi.escape(self.request.get('comment')))
                 feedback.put()
                 self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
             else:
