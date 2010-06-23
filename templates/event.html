@@ -22,7 +22,7 @@
 
 	{% if not event.is_staffed %}<p>
 		<span style="color: red; font-weight: bold">This event is currently understaffed.</span><br/>
-		Due to this size of the event, at least {{ event.staff_needed }} Dojo staff member{{ event.staff_needed|pluralize }} must volunteer to staff it.  It will not appear on the public calendar until {% if not event.is_approved %}it has been approved and {% endif %}enough staff volunteer.
+		Due to this size of the event, at least {{ event.staff_needed }} more Dojo member{{ event.staff_needed|pluralize }} must volunteer to staff it.  It will not appear on the public calendar until {% if not event.is_approved %}it has been approved and {% endif %}enough people volunteer.
 	</p>{% else %}{% if not event.is_approved %}<p>
 		<span style="color: red; font-weight: bold">This event is not yet visible.</span><br/>
 		This event will not appear on the public calendar until it has been approved. If this does not happen soon, contact <a href="email:events@hackerdojo.com">events@hackerdojo.com</a> for assistance.

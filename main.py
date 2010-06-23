@@ -6,7 +6,7 @@ from django.utils import simplejson
 from django.template.defaultfilters import slugify
 from icalendar import Calendar
 import logging, urllib
-
+from pprint import pprint
 from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
@@ -52,7 +52,7 @@ class EventHandler(webapp.RequestHandler):
         user = users.get_current_user()
         if user:
             is_admin = username(user) in dojo('/groups/events')
-            is_staff = username(user) in dojo('/groups/staff')
+            is_staff = True
             can_approve = (event.status in ['pending'] and is_admin)
             can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
             logout_url = users.create_logout_url('/')
@@ -64,7 +64,7 @@ class EventHandler(webapp.RequestHandler):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
         is_admin = username(user) in dojo('/groups/events')
-        is_staff = username(user) in dojo('/groups/staff')
+        is_staff = True
         state = self.request.get('state')
         if state:
             if state.lower() == 'approve' and is_admin:
