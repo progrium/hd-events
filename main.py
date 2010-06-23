@@ -171,8 +171,12 @@ class NewHandler(webapp.RequestHandler):
                 self.request.get('end_time_hour'),
                 self.request.get('end_time_minute'),
                 self.request.get('end_time_ampm')), "%m/%d/%Y %I:%M %p")
+            if not self.request.get('estimated_size').isdigit():
+              raise ValueError("Estimated number of people must be a number")
+            if not int(self.request.get('estimated_size')) > 0:
+              raise ValueError("Estimated number of people must be greater then zero")
             if (end_time-start_time).days < 0:
-                raise ValueError("End time must be after start time")
+              raise ValueError("End time must be after start time")
             else:
                 event = Event(
                     name = self.request.get('name'),
