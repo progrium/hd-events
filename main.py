@@ -66,11 +66,11 @@ class EventHandler(webapp.RequestHandler):
                 can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
                 can_unstaff = (not event.status in ['canceled', 'deleted'] and is_staff and user in event.staff)
                 logout_url = users.create_logout_url('/')
+                can_cancel = is_admin or user == event.member
             else:
                 login_url = users.create_login_url('/')
             event.details = db.Text(event.details.replace("\n","<br/>"))
             event.notes = db.Text(event.notes.replace("\n","<br/>"))
-            should_show_cancel = is_admin or user == event.member
             self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):

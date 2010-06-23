@@ -13,7 +13,7 @@
 		  (This will return the event to the &ldquo;pending&rdquo; status.)
 		{% else %}
 		  {% if can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
-		  {% if should_show_cancel %}<input type="submit" name="state" value="Cancel" />{% endif %}
+		  {% if can_cancel %}<input type="submit" name="state" value="Cancel" />{% endif %}
 		  {% if is_admin %}<input type="submit" name="state" value="Delete" />{% endif %}
 		  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
 		  {% if can_unstaff %}<input type="submit" name="state" value="Unstaff" />{% endif %}
