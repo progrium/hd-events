@@ -39,8 +39,8 @@ class ExpireReminderCron(webapp.RequestHandler):
 
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
-        events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
         if format == 'ics':
+            events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
             cal = Calendar()
             for event in events:
                 cal.add_component(event.to_ical())
@@ -48,7 +48,7 @@ class EventsHandler(webapp.RequestHandler):
             self.response.out.write(cal.as_string())
         elif format == 'json':
             self.response.headers['content-type'] = 'application/json'
-            events = map(lambda x: x.to_dict(summarize=True), events)
+            events = map(lambda x: x.to_dict(summarize=True), Event.get_approved_list())
             self.response.out.write(simplejson.dumps(events))
 
 class EventHandler(webapp.RequestHandler):
