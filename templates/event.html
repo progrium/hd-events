@@ -35,7 +35,7 @@
 	<div class='b-block'><div class='b-label'>Member:</div><div class='b-data'>{{event.member}}</div></div>
 	<div class='b-block'><div class='b-label'>Type:</div><div class='b-data'>{{event.type}}</div></div>
 	<div class='b-block'><div class='b-label'>Estimated size:</div><div class='b-data'>{{event.estimated_size}}</div></div>
-	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}{% if is_staff %}, {{event.contact_phone}}{% endif %}</div></div>
+	<div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}{% if user %}, {{event.contact_phone}}{% endif %}</div></div>
 	<div class='b-block'><div class='b-label'>URL:</div><div class='b-data'><a href='{{event.url}}'>{{event.url}}</a></div></div>
 	<div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'>{{event.fee}}</div></div>
 	<div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{{event.roomlist}}</div></div>
