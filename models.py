@@ -2,7 +2,7 @@ from google.appengine.ext import db
 from google.appengine.api import urlfetch, memcache, users, mail
 from datetime import datetime, timedelta
 from icalendar import Calendar, Event as CalendarEvent
-from utils import human_username, local_today
+from utils import human_username, local_today, to_sentence_list
 import logging
 
 ROOM_OPTIONS = (
@@ -17,16 +17,6 @@ ROOM_OPTIONS = (
     ('Front Area', 20))
 GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
-
-def to_sentence(aList):
-    sentence = ', '.join([e for e in aList if aList.index(e) != len(aList) -1])
-    if len(aList) > 1: sentence = '%s and %s' % (sentence, aList[-1])
-    return sentence
-
-def to_name_list(aList):
-    sentence = ', '.join([human_username(e) for e in aList if aList.index(e) != len(aList) -1])
-    if len(aList) > 1: sentence = '%s and %s' % (sentence, human_username(aList[-1]))
-    return sentence
 
 class Event(db.Model):
     status = db.StringProperty(required=True, default='pending', choices=set(
@@ -67,10 +57,10 @@ class Event(db.Model):
             .order('start_time')
 
     def stafflist(self):
-        return to_name_list(self.staff)
+        return to_sentence_list(map(human_username, self.staff))
 
     def roomlist(self):
-        return to_sentence(self.rooms)
+        return to_sentence_list(self.rooms)
 
     def is_staffed(self):
         return len(self.staff) >= self.staff_needed()

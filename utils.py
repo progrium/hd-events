@@ -19,7 +19,21 @@ def dojo(path):
             cache_ttl = 10
         memcache.set(path, resp, cache_ttl)
     return resp
-
+    
+def to_sentence_list(lst):
+    lst = map(str, lst)
+    count = len(lst)
+    if count == 0:
+        return ''
+    elif count == 1: 
+        return lst[0]
+    else:
+        if count > 2:
+            pre_and = ', '.join(lst[:-1])
+        else:
+            pre_and = lst[0]
+        return ' and '.join([pre_and, lst[-1]])
+    
 def username(user):
     return user.nickname().split('@')[0] if user else None
 
