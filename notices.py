@@ -68,6 +68,7 @@ Again, your event is NOT YET APPROVED and not on the calendar.""" % (
     event.key().id(),
     slugify(event.name),))
 
+
 def notify_staff_needed(event):
     mail.send_mail(sender=FROM_ADDRESS, to=STAFF_ADDRESS,
         subject='[Event Staffing] %s on %s' % (event.name, event.start_time.strftime('%a %b %d')),
@@ -95,6 +96,7 @@ http://events.hackerdojo.com/event/%s-%s
     event.staff_needed(),
     event.key().id(),
     slugify(event.name),))
+
 
 def notify_unapproved_unstaff_event(event):
     mail.send_mail(sender=FROM_ADDRESS, to=STAFF_ADDRESS,
@@ -124,6 +126,7 @@ http://events.hackerdojo.com/event/%s-%s
     event.key().id(),
     slugify(event.name),))
 
+
 def notify_new_event(event):
     mail.send_mail(sender=FROM_ADDRESS, to=NEW_EVENT_ADDRESS,
         subject='[New Event] %s on %s' % (event.name, event.start_time.strftime('%a %b %d')),
@@ -147,6 +150,7 @@ http://events.hackerdojo.com/event/%s-%s
     event.key().id(),
     slugify(event.name),))
 
+
 def notify_owner_approved(event):
     mail.send_mail(sender=FROM_ADDRESS, to=event.member.email(),
         subject="[Event Approved] %s" % event.name,
@@ -158,8 +162,10 @@ present at the event! And remember your duties as a Hacker Dojo event sponsor.
 http://events.hackerdojo.com/event/%s-%s
 """ % (event.key().id(), slugify(event.name)))
 
+
 def notify_owner_expiring(event):
     pass
+
 
 def notify_owner_expired(event):
     pass

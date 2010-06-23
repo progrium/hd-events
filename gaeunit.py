@@ -67,7 +67,7 @@ import cgi
 import django.utils.simplejson
 
 from google.appengine.ext import webapp
-from google.appengine.api import apiproxy_stub_map  
+from google.appengine.api import apiproxy_stub_map
 from google.appengine.api import datastore_file_stub
 from google.appengine.ext.webapp.util import run_wsgi_app
 
@@ -107,7 +107,7 @@ class MainTestPageHandler(webapp.RequestHandler):
             error = _log_error("The format '%s' is not valid." % cgi.escape(format))
             self.error(404)
             self.response.out.write(error)
-            
+
     def _render_html(self):
         suite, error = _create_suite(self.request)
         if not error:
@@ -115,7 +115,7 @@ class MainTestPageHandler(webapp.RequestHandler):
         else:
             self.error(404)
             self.response.out.write(error)
-        
+
     def _render_plain(self):
         self.response.headers["Content-Type"] = "text/plain"
         runner = unittest.TextTestRunner(self.response.out)
@@ -173,7 +173,7 @@ class JsonTestRunner:
 
 
 class JsonTestRunHandler(webapp.RequestHandler):
-    def get(self):    
+    def get(self):
         self.response.headers["Content-Type"] = "text/javascript"
         test_name = self.request.get("name")
         _load_default_test_modules()
@@ -222,7 +222,7 @@ def _create_suite(request):
                 module_names = package.__all__
                 for module_name in module_names:
                     suite.addTest(loader.loadTestsFromName('%s.%s' % (package_name, module_name)))
-    
+
         if suite.countTestCases() == 0:
             raise Exception("'%s' is not found or does not contain any tests." %  \
                             (test_name or package_name or 'local directory: \"%s\"' % _LOCAL_TEST_DIR))
@@ -283,14 +283,14 @@ def _run_test_suite(runner, suite):
     test suite, run the test suite, and restore the development apiproxy.
     This isolates the test datastore from the development datastore.
 
-    """        
+    """
     original_apiproxy = apiproxy_stub_map.apiproxy
     try:
        apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap() 
-       temp_stub = datastore_file_stub.DatastoreFileStub('GAEUnitDataStore', None, None, trusted=True)  
+       temp_stub = datastore_file_stub.DatastoreFileStub('GAEUnitDataStore', None, None, trusted=True)
        apiproxy_stub_map.apiproxy.RegisterStub('datastore', temp_stub)
        # Allow the other services to be used as-is for tests.
-       for name in ['user', 'urlfetch', 'mail', 'memcache', 'images']: 
+       for name in ['user', 'urlfetch', 'mail', 'memcache', 'images']:
            apiproxy_stub_map.apiproxy.RegisterStub(name, original_apiproxy.GetStub(name))
        runner.run(suite)
     finally:
@@ -301,7 +301,7 @@ def _log_error(s):
    logging.warn(s)
    return s
 
-           
+
 ################################################
 # Browser HTML, CSS, and Javascript
 ################################################
@@ -390,11 +390,11 @@ _MAIN_PAGE_CONTENT = """
         function testFailed() {
             document.getElementById("testindicator").style.backgroundColor="red";
         }
-        
+
         function testSucceed() {
             document.getElementById("testindicator").style.backgroundColor="green";
         }
-        
+
         function runTests() {
             // Run each test asynchronously (concurrently).
             var totalTests = 0;
