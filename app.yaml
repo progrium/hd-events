@@ -15,5 +15,17 @@ handlers:
 - url: /remote_api
   script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
   login: admin
+- url: /expire
+  login: admin
+  script: main.py
+- url: /expiring
+  login: admin
+  script: main.py
+- url: /cronbugowners
+  login: admin
+  script: main.py
 - url: .*
   script: main.py
+  
+  
+  
