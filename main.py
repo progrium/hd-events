@@ -26,6 +26,7 @@ class ExpireCron(webapp.RequestHandler):
             event.expire()
             notify_owner_expired(event)
 
+
 class ExpireReminderCron(webapp.RequestHandler):
     def post(self):
         # Find events expiring in 10 days to warn owner
@@ -36,6 +37,7 @@ class ExpireReminderCron(webapp.RequestHandler):
             .filter('expired <', ten_days + timedelta(days=1))
         for event in events:
             notify_owner_expiring(event)
+
 
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
@@ -50,6 +52,7 @@ class EventsHandler(webapp.RequestHandler):
             self.response.headers['content-type'] = 'application/json'
             events = map(lambda x: x.to_dict(summarize=True), Event.get_approved_list())
             self.response.out.write(simplejson.dumps(events))
+
 
 class EventHandler(webapp.RequestHandler):
     def get(self, id):
@@ -97,10 +100,10 @@ class EventHandler(webapp.RequestHandler):
                 event.undelete()
             if state.lower() == 'expire' and is_admin:
                 event.expire()
-
             if event.status == 'approved':
                 notify_owner_approved(event)
         self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+
 
 class ApprovedHandler(webapp.RequestHandler):
     def get(self):
@@ -117,6 +120,7 @@ class ApprovedHandler(webapp.RequestHandler):
             whichbase = self.request.get('base') + '.html'
         self.response.out.write(template.render('templates/approved.html', locals()))
 
+
 class MyEventsHandler(webapp.RequestHandler):
     @util.login_required
     def get(self):
@@ -131,6 +135,7 @@ class MyEventsHandler(webapp.RequestHandler):
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/myevents.html', locals()))
 
+
 class PastHandler(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -143,11 +148,13 @@ class PastHandler(webapp.RequestHandler):
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
 
+
 class CronBugOwnersHandler(webapp.RequestHandler):
     def get(self):
         events = Event.get_pending_list()
         for e in events:
           bug_owner_pending(e)
+
 
 class PendingHandler(webapp.RequestHandler):
     def get(self):
@@ -162,6 +169,7 @@ class PendingHandler(webapp.RequestHandler):
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/pending.html', locals()))
 
+
 class NewHandler(webapp.RequestHandler):
     @util.login_required
     def get(self):
@@ -172,6 +180,7 @@ class NewHandler(webapp.RequestHandler):
             login_url = users.create_login_url('/')
         rooms = ROOM_OPTIONS
         self.response.out.write(template.render('templates/new.html', locals()))
+
 
     def post(self):
         user = users.get_current_user()
@@ -271,6 +280,7 @@ def main():
         ('/expiring', ExpireReminderCron),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
+
 
 if __name__ == '__main__':
     main()

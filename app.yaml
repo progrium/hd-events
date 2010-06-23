@@ -24,6 +24,9 @@ handlers:
 - url: /cronbugowners
   login: admin
   script: main.py
+- url: /test.*
+  login: admin
+  script: gaeunit.py
 - url: .*
   script: main.py
   

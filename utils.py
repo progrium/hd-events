@@ -3,7 +3,6 @@ from django.utils import simplejson
 from datetime import datetime
 import re
 import pytz
-import unittest
 
 LOCAL_TZ = 'America/Los_Angeles'
 
@@ -86,31 +85,3 @@ def is_phone_valid( in_phone, area_code_required=True, international_okay=True )
     if parts[ 1 ] == None or parts[ 2 ] == None or len( parts[ 1 ] ) != 3 or len( parts[ 2 ] ) != 4:
         out = False
     return out
-
-
-class TestInput( unittest.TestCase ):
-    """Unit tests to make sure the above functions are operating properly"""
-    def setUp( self ):
-        pass
-    
-    def test_phone( self ):
-        self.assertFalse( is_phone_valid( '898-7925' ) )
-        self.assertFalse( is_phone_valid( '898-7925 x1234' ) )
-        self.assertFalse( is_phone_valid( '8985-7925' ) )
-        self.assertFalse( is_phone_valid( '8987925' ) )
-        self.assertTrue( is_phone_valid( '(650) 898-7925' ) )
-        self.assertTrue( is_phone_valid( '(650) 898-7925 x1234' ) )
-        self.assertTrue( is_phone_valid( '6508987925' ) )
-        self.assertFalse( is_phone_valid( '65089879251234' ) )
-        self.assertFalse( is_phone_valid( '89879251234' ) )
-        self.assertTrue( is_phone_valid( '6508987925x1234' ) )
-        self.assertFalse( is_phone_valid( '89879251234' ) )
-        self.assertFalse( is_phone_valid( 'your mom' ) )
-        
-    def test_phone_international( self ):
-        # TODO: Tests for this
-        pass
-
-# If this file is executed by itself, do the unit tests defined in the Test classes
-if ( __name__ == "__main__" ):
-    unittest.main()
