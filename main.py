@@ -60,8 +60,8 @@ class EventHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        event.details = event.details.replace("\n","<br/>")
-        event.notes = event.notes.replace("\n","<br/>")
+        event.details = db.Text(event.details.replace("\n","<br/>"))
+        event.notes = db.Text(event.notes.replace("\n","<br/>"))
         self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):
