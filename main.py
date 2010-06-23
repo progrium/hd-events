@@ -58,6 +58,7 @@ class EventHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
+        should_show_cancel = is_admin or user == event.member
         self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):
@@ -71,7 +72,7 @@ class EventHandler(webapp.RequestHandler):
                 event.approve()
             if state.lower() == 'staff' and is_staff:
                 event.add_staff(user)
-            if state.lower() == 'cancel' and is_admin:
+            if state.lower() == 'cancel' and is_admin or event.member == user:
                 event.cancel()
             if state.lower() == 'delete' and is_admin:
                 event.delete()
