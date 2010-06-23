@@ -69,8 +69,8 @@ class EventHandler(webapp.RequestHandler):
                 can_cancel = is_admin or user == event.member
             else:
                 login_url = users.create_login_url('/')
-            event.details = db.Text(event.details.replace("\n","<br/>"))
-            event.notes = db.Text(event.notes.replace("\n","<br/>"))
+            event.details = db.Text(event.details.replace('\n','<br/>'))
+            event.notes = db.Text(event.notes.replace('\n','<br/>'))
             self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):
@@ -114,7 +114,7 @@ class ApprovedHandler(webapp.RequestHandler):
         tomorrow = today + timedelta(days=1)
         whichbase = 'base.html'
         if self.request.get('base'):
-            whichbase = self.request.get('base') + ".html"
+            whichbase = self.request.get('base') + '.html'
         self.response.out.write(template.render('templates/approved.html', locals()))
 
 class MyEventsHandler(webapp.RequestHandler):
@@ -176,24 +176,24 @@ class NewHandler(webapp.RequestHandler):
     def post(self):
         user = users.get_current_user()
         try:
-            start_time = datetime.strptime("%s %s:%s %s" % (
+            start_time = datetime.strptime('%s %s:%s %s' % (
                 self.request.get('date'),
                 self.request.get('start_time_hour'),
                 self.request.get('start_time_minute'),
-                self.request.get('start_time_ampm')), "%m/%d/%Y %I:%M %p")
-            end_time = datetime.strptime("%s %s:%s %s" % (
+                self.request.get('start_time_ampm')), '%m/%d/%Y %I:%M %p')
+            end_time = datetime.strptime('%s %s:%s %s' % (
                 self.request.get('date'),
                 self.request.get('end_time_hour'),
                 self.request.get('end_time_minute'),
-                self.request.get('end_time_ampm')), "%m/%d/%Y %I:%M %p")
+                self.request.get('end_time_ampm')), '%m/%d/%Y %I:%M %p')
             if not self.request.get('estimated_size').isdigit():
-              raise ValueError("Estimated number of people must be a number")
+              raise ValueError('Estimated number of people must be a number')
             if not int(self.request.get('estimated_size')) > 0:
-              raise ValueError("Estimated number of people must be greater then zero")
+              raise ValueError('Estimated number of people must be greater then zero')
             if (end_time-start_time).days < 0:
-                raise ValueError("End time must be after start time")
+                raise ValueError('End time must be after start time')
             if ( not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
-                raise ValueError( "Phone number does not appear to be valid" )
+                raise ValueError( 'Phone number does not appear to be valid' )
             else:
                 event = Event(
                     name = cgi.escape(self.request.get('name')),
@@ -207,7 +207,7 @@ class NewHandler(webapp.RequestHandler):
                     url = cgi.escape(self.request.get('url')),
                     fee = cgi.escape(self.request.get('fee')),
                     notes = cgi.escape(self.request.get('notes')),
-                    rooms = cgi.escape(self.request.get_all('rooms')),
+                    rooms = self.request.get_all('rooms'),
                     expired = local_today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
                     )
                 event.put()
@@ -220,7 +220,7 @@ class NewHandler(webapp.RequestHandler):
         except Exception, e:
             message = str(e)
             if 'match format' in message:
-                message = "Date is required."
+                message = 'Date is required.'
             if message.startswith('Property'):
                 message = message[9:].replace('_', ' ').capitalize()
             set_cookie(self.response.headers, 'formerror', message)
@@ -230,18 +230,18 @@ class NewHandler(webapp.RequestHandler):
 
 class FeedbackHandler(webapp.RequestHandler):
     @util.login_required
-    def get(self, event_id):
+    def get(self, id):
         user = users.get_current_user()
-        event = Event.get_by_id(int(event_id))
+        event = Event.get_by_id(int(id))
         if user:
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
         self.response.out.write(template.render('templates/feedback.html', locals()))
 
-    def post(self, event_id):
+    def post(self, id):
         user = users.get_current_user()
-        event = Event.get_by_id(int(event_id))
+        event = Event.get_by_id(int(id))
         try:
             if self.request.get('rating'):
                 feedback = Feedback(
@@ -251,10 +251,10 @@ class FeedbackHandler(webapp.RequestHandler):
                 feedback.put()
                 self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
             else:
-                raise ValueError("Please select a rating")
+                raise ValueError('Please select a rating')
         except Exception:
             set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
-            self.redirect('/feedback/new/'+event_id)
+            self.redirect('/feedback/new/' + id)
 
 def main():
     application = webapp.WSGIApplication([

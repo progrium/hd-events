@@ -2,9 +2,9 @@ from google.appengine.api import mail
 from django.template.defaultfilters import slugify
 import os
 
-FROM_ADDRESS = "Dojo Events <no-reply@hackerdojo-events.appspotmail.com>"
-NEW_EVENT_ADDRESS = "events@hackerdojo.com"
-STAFF_ADDRESS = "staff@hackerdojo.com"
+FROM_ADDRESS = 'Dojo Events <no-reply@hackerdojo-events.appspotmail.com>'
+NEW_EVENT_ADDRESS = 'events@hackerdojo.com'
+STAFF_ADDRESS = 'staff@hackerdojo.com'
 
 def bug_owner_pending(e):
   body = """
@@ -70,7 +70,7 @@ Again, your event is NOT YET APPROVED and not on the calendar.""" % (
 
 def notify_staff_needed(event):
     mail.send_mail(sender=FROM_ADDRESS, to=STAFF_ADDRESS,
-        subject="[Event Staffing] %s on %s" % (event.name, event.start_time.strftime('%a %b %d')),
+        subject='[Event Staffing] %s on %s' % (event.name, event.start_time.strftime('%a %b %d')),
         body="""Hello staff!
 
 Fellow member %s is sponsoring a ~%s person event:
@@ -126,7 +126,7 @@ http://events.hackerdojo.com/event/%s-%s
 
 def notify_new_event(event):
     mail.send_mail(sender=FROM_ADDRESS, to=NEW_EVENT_ADDRESS,
-        subject="[New Event] %s on %s" % (event.name, event.start_time.strftime('%a %b %d')),
+        subject='[New Event] %s on %s' % (event.name, event.start_time.strftime('%a %b %d')),
         body="""Member: %s
 When: %s to %s
 Type: %s
