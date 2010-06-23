@@ -6,8 +6,8 @@ from google.appengine.api import urlfetch, memcache, users, mail
 from django.utils import simplejson
 from django.template.defaultfilters import slugify
 from icalendar import Calendar
-import logging, urllib
-
+import logging, urllib, os
+from pprint import pprint
 from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
@@ -70,13 +70,14 @@ class EventHandler(webapp.RequestHandler):
                 login_url = users.create_login_url('/')
             event.details = db.Text(event.details.replace("\n","<br/>"))
             event.notes = db.Text(event.notes.replace("\n","<br/>"))
+            should_show_cancel = is_admin or user == event.member
             self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
         is_admin = username(user) in dojo('/groups/events')
-        is_staff = username(user) in dojo('/groups/staff')
+        is_staff = True
         state = self.request.get('state')
         if state:
             if state.lower() == 'approve' and is_admin:
@@ -88,7 +89,7 @@ class EventHandler(webapp.RequestHandler):
                 # send notification is state changed to understaffed
                 if event.status == 'understaffed':
                     notify_unapproved_unstaff_event(event)
-            if state.lower() == 'cancel' and is_admin:
+            if state.lower() == 'cancel' and is_admin or event.member == user:
                 event.cancel()
             if state.lower() == 'delete' and is_admin:
                 event.delete()
@@ -141,6 +142,12 @@ class PastHandler(webapp.RequestHandler):
         events = Event.all().filter('start_time < ', today).order('-start_time')
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
+
+class CronBugOwnersHandler(webapp.RequestHandler):
+    def get(self):
+        events = Event.get_pending_list()
+        for e in events:
+          bug_owner_pending(e)
 
 class PendingHandler(webapp.RequestHandler):
     def get(self):
@@ -253,6 +260,7 @@ def main():
         ('/events\.(.+)', EventsHandler),
         ('/past', PastHandler),
         ('/pending', PendingHandler),
+        ('/cronbugowners', CronBugOwnersHandler),
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
         ('/event/(\d+).*', EventHandler),

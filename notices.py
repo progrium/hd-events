@@ -1,10 +1,53 @@
 from google.appengine.api import mail
 from django.template.defaultfilters import slugify
+import os
 
 FROM_ADDRESS = "Dojo Events <no-reply@hackerdojo-events.appspotmail.com>"
 NEW_EVENT_ADDRESS = "events@hackerdojo.com"
 STAFF_ADDRESS = "staff@hackerdojo.com"
 
+def bug_owner_pending(e):
+  body = """
+Event: %s
+Owner: %s
+Date: %s
+URL: http://%s/event/%s-%s
+""" % (
+    e.name, 
+    str(e.member),
+    e.start_time.strftime('%A, %B %d'),
+    os.environ.get('HTTP_HOST'),
+    e.key().id(),
+    slugify(e.name),)
+  
+  if e.staff_needed()>0:
+    body += """
+Alert! You still need to get %i more member(s) to staff your event.
+Please get some other Dojo members to go to
+http://%s/event/%s-%s and click the 'Staff' button.
+""" % (
+    e.staff_needed(),
+    os.environ.get('HTTP_HOST'),
+    e.key().id(),
+    slugify(e.name),)
+  
+  if not e.is_approved():
+    body += """
+Alert! The events team has not approved your event yet.
+Please e-mail them at events@hackerdojo.com to see whats up.
+"""
+
+  body += """
+Your event is NOT scheduled.  Please remedy the above issues to get your event official.
+"""
+
+  print body
+  print "*" * 80
+    
+  mail.send_mail(sender=FROM_ADDRESS, to=e.member.email(),
+   subject="[Pending Event] Your event is still pending: " + e.name,
+   body=body)
+             
 def notify_owner_confirmation(event):
     mail.send_mail(sender=FROM_ADDRESS, to=event.member.email(),
         subject="[New Event] Submitted but **not yet approved**",
