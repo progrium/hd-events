@@ -5,7 +5,7 @@ from google.appengine.api import urlfetch, memcache, users, mail
 from django.utils import simplejson
 from django.template.defaultfilters import slugify
 from icalendar import Calendar
-import logging, urllib
+import logging, urllib, os
 from pprint import pprint
 from datetime import datetime, timedelta
 
@@ -125,6 +125,12 @@ class PastHandler(webapp.RequestHandler):
         is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
 
+class CronBugOwnersHandler(webapp.RequestHandler):
+    def get(self):
+        events = Event.get_pending_list()
+        for e in events:
+          bug_owner_pending(e)
+
 class PendingHandler(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -236,6 +242,7 @@ def main():
         ('/events\.(.+)', EventsHandler),
         ('/past', PastHandler),
         ('/pending', PendingHandler),
+        ('/cronbugowners', CronBugOwnersHandler),
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
         ('/event/(\d+).*', EventHandler),
