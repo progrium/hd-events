@@ -47,6 +47,7 @@ def human_username(user):
 def set_cookie(headers, name, value):
     headers.add_header('Set-Cookie', '%s=%s;' % (name, simplejson.dumps(value)))
 
+
 def local_today():
     '''Return a datetime object representing the start of today, local time.'''
     utc_now = pytz.utc.localize(datetime.utcnow())

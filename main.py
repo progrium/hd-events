@@ -39,30 +39,38 @@ class ExpireReminderCron(webapp.RequestHandler):
 
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
+        events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
         if format == 'ics':
-            events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
             cal = Calendar()
             for event in events:
                 cal.add_component(event.to_ical())
             self.response.headers['content-type'] = 'text/calendar'
             self.response.out.write(cal.as_string())
+        elif format == 'json':
+            self.response.headers['content-type'] = 'application/json'
+            events = map(lambda x: x.to_dict(summarize=True), events)
+            self.response.out.write(simplejson.dumps(events))
 
 class EventHandler(webapp.RequestHandler):
     def get(self, id):
         event = Event.get_by_id(int(id))
-        user = users.get_current_user()
-        if user:
-            is_admin = username(user) in dojo('/groups/events')
-            is_staff = username(user) in dojo('/groups/staff')
-            can_approve = (event.status in ['pending'] and is_admin and not user == event.member)
-            can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
-            can_unstaff = (not event.status in ['canceled', 'deleted'] and is_staff and user in event.staff)
-            logout_url = users.create_logout_url('/')
+        if self.request.path.endswith('json'):
+            self.response.headers['content-type'] = 'application/json'
+            self.response.out.write(simplejson.dumps(event.to_dict()))
         else:
-            login_url = users.create_login_url('/')
-        event.details = db.Text(event.details.replace("\n","<br/>"))
-        event.notes = db.Text(event.notes.replace("\n","<br/>"))
-        self.response.out.write(template.render('templates/event.html', locals()))
+            user = users.get_current_user()
+            if user:
+                is_admin = username(user) in dojo('/groups/events')
+                is_staff = username(user) in dojo('/groups/staff')
+                can_approve = (event.status in ['pending'] and is_admin and not user == event.member)
+                can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
+                can_unstaff = (not event.status in ['canceled', 'deleted'] and is_staff and user in event.staff)
+                logout_url = users.create_logout_url('/')
+            else:
+                login_url = users.create_login_url('/')
+            event.details = db.Text(event.details.replace("\n","<br/>"))
+            event.notes = db.Text(event.notes.replace("\n","<br/>"))
+            self.response.out.write(template.render('templates/event.html', locals()))
 
     def post(self, id):
         event = Event.get_by_id(int(id))
@@ -248,6 +256,7 @@ def main():
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
         ('/event/(\d+).*', EventHandler),
+        ('/event/(\d+)\.json', EventHandler),
         ('/expire', ExpireCron),
         ('/expiring', ExpireReminderCron),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
