@@ -81,7 +81,7 @@ class Event(db.Model):
     def is_approved(self):
         '''Has the events team approved the event?  Note: This does not
         necessarily imply that the event is in state 'approved'.'''
-        return self.status in ('understaffed', 'approved', 'cancelled')
+        return self.status in ('understaffed', 'approved', 'canceled')
 
     def is_canceled(self):
         return self.status == 'canceled'
@@ -110,7 +110,7 @@ class Event(db.Model):
         user = users.get_current_user()
         self.status = 'canceled'
         self.put()
-        logging.info('%s cancelled %s' % (user.nickname, self.name))
+        logging.info('%s canceled %s' % (user.nickname, self.name))
 
     def delete(self):
         user = users.get_current_user()
@@ -135,6 +135,13 @@ class Event(db.Model):
         self.staff.append(user)
         if self.is_staffed() and self.status == 'understaffed':
             self.status = 'approved'
+        self.put()
+        logging.info('%s staffed %s' % (user.nickname, self.name))
+
+    def remove_staff(self, user):
+        self.staff.remove(user)
+        if not self.is_staffed() and self.status == 'approved':
+            self.status = 'understaffed'
         self.put()
         logging.info('%s staffed %s' % (user.nickname, self.name))
 

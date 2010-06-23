@@ -16,6 +16,7 @@
 		  {% if is_admin %}<input type="submit" name="state" value="Cancel" />{% endif %}
 		  {% if is_admin %}<input type="submit" name="state" value="Delete" />{% endif %}
 		  {% if can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
+		  {% if can_unstaff %}<input type="submit" name="state" value="Unstaff" />{% endif %}
 		{% endif %}
 	  </form>
 	</p>{% endif %}

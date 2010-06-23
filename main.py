@@ -56,6 +56,7 @@ class EventHandler(webapp.RequestHandler):
             is_staff = username(user) in dojo('/groups/staff')
             can_approve = (event.status in ['pending'] and is_admin)
             can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
+            can_unstaff = (not event.status in ['canceled', 'deleted'] and is_staff and user in event.staff)
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
@@ -74,6 +75,11 @@ class EventHandler(webapp.RequestHandler):
                 event.approve()
             if state.lower() == 'staff' and is_staff:
                 event.add_staff(user)
+            if state.lower() == 'unstaff' and is_staff:
+                event.remove_staff(user)
+                # send notification is state changed to understaffed
+                if event.status == 'understaffed':
+                    notify_unapproved_unstaff_event(event)
             if state.lower() == 'cancel' and is_admin:
                 event.cancel()
             if state.lower() == 'delete' and is_admin:
