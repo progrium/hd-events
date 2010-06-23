@@ -87,6 +87,11 @@ class Event(db.Model):
         necessarily imply that the event is in state 'approved'.'''
         return self.status in ('understaffed', 'approved', 'canceled')
 
+    def is_approved(self):
+        '''Has the events team approved the event?  Note: This does not
+        necessarily imply that the event is in state 'approved'.'''
+        return self.status in ('understaffed', 'approved', 'cancelled')
+
     def is_canceled(self):
         return self.status == 'canceled'
 
@@ -115,6 +120,18 @@ class Event(db.Model):
         self.status = 'canceled'
         self.put()
         logging.info('%s canceled %s' % (user.nickname, self.name))
+
+    def delete(self):
+        user = users.get_current_user()
+        self.status = 'deleted'
+        self.put()
+        logging.info('%s deleted %s' % (user.nickname, self.name))
+
+    def undelete(self):
+        user = users.get_current_user()
+        self.status = 'pending'
+        self.put()
+        logging.info('%s undeleted %s' % (user.nickname, self.name))
 
     def delete(self):
         user = users.get_current_user()
