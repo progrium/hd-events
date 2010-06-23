@@ -54,7 +54,7 @@ class EventHandler(webapp.RequestHandler):
         if user:
             is_admin = username(user) in dojo('/groups/events')
             is_staff = username(user) in dojo('/groups/staff')
-            can_approve = (event.status in ['pending'] and is_admin)
+            can_approve = (event.status in ['pending'] and is_admin and not user == event.member)
             can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
             can_unstaff = (not event.status in ['canceled', 'deleted'] and is_staff and user in event.staff)
             logout_url = users.create_logout_url('/')
