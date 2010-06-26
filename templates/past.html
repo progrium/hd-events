@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
 {% block content %}
 <div id="menu" style="float: right; margin: 10px; font-size: smaller;">
-	Approved | <a href="/pending">Pending</a> | <a href="/new" style="font-weight: bold;">New Event</a>
+    Approved | <a href="/pending">Pending</a> | <a href="/new" style="font-weight: bold;">New Event</a>
 </div>
 
 <div id="primary">
-	<h3>Past Events</h3>
-	<a href="/" style="font-size: smaller; margin-top: -20px; display: block;">&larr; Upcoming Events</a>
-	
-	{% regroup events by start_date as grouped_events %}
-	{% for events in grouped_events %}
-	<h4>{% ifequal events.grouper today.date %}<span style="text-decoration:underline;">Today</span> - {% endifequal %}{{events.grouper|date:"l, F j"}}</h4>
-	<table>
-	  {% for event in events.list %}
-		<tr>
-			<td width="75">{{event.start_time|date:"g:iA"|lower}}</td>
-			<td>
-				<a 
-				  {% if event.is_canceled %}style="text-decoration: line-through;"{% endif %}
-				  href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a> 
-				{% if event.is_canceled %}<span style="color: white; font-size: x-small; padding: 2px; background: gray">canceled</span>
-				{% else %}(<a href="/feedback/new/{{event.key.id}}">Give your feedback</a>){% endif %}
-			</td>
-		</tr>
-		{% endfor %}
-	</table>
-	{% endfor %}
-	
-		<p style="font-size: x-small">Alternative formats: <a href="/events.ics">iCal</a> | RSS | JSON</p>
+    <h3>Past Events</h3>
+    <a href="/" style="font-size: smaller; margin-top: -20px; display: block;">&larr; Upcoming Events</a>
+    
+    {% regroup events by start_date as grouped_events %}
+    {% for events in grouped_events %}
+    <h4>{% ifequal events.grouper today.date %}<span style="text-decoration:underline;">Today</span> - {% endifequal %}{{events.grouper|date:"l, F j"}}</h4>
+    <table>
+      {% for event in events.list %}
+        <tr>
+            <td width="75">{{event.start_time|date:"g:iA"|lower}}</td>
+            <td>
+                <a 
+                  {% if event.is_canceled %}style="text-decoration: line-through;"{% endif %}
+                  href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a> 
+                {% if event.is_canceled %}<span style="color: white; font-size: x-small; padding: 2px; background: gray">canceled</span>
+                {% else %}(<a href="/feedback/new/{{event.key.id}}">Give your feedback</a>){% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+    
+        <p style="font-size: x-small">Alternative formats: <a href="/events.ics">iCal</a> | RSS | JSON</p>
 </div>
 
 

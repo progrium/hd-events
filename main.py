@@ -11,7 +11,7 @@ from pprint import pprint
 from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
-from utils import dojo, username, human_username, set_cookie, local_today, is_phone_valid, UserRights
+from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights
 from notices import *
 
 class ExpireCron(webapp.RequestHandler):
@@ -128,7 +128,6 @@ class MyEventsHandler(webapp.RequestHandler):
         events = Event.all().filter('member = ', user).order('start_time')
         today = local_today()
         tomorrow = today + timedelta(days=1)
-        is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/myevents.html', locals()))
 
 
@@ -141,7 +140,6 @@ class PastHandler(webapp.RequestHandler):
             login_url = users.create_login_url('/')
         today = local_today()
         events = Event.all().filter('start_time < ', today).order('-start_time')
-        is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/past.html', locals()))
 
 
@@ -162,7 +160,6 @@ class PendingHandler(webapp.RequestHandler):
         events = Event.get_pending_list()
         today = local_today()
         tomorrow = today + timedelta(days=1)
-        is_admin = username(user) in dojo('/groups/events')
         self.response.out.write(template.render('templates/pending.html', locals()))
 
 
