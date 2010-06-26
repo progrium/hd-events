@@ -67,9 +67,9 @@ def get_phone_parts( in_phone, international_okay=False ):
         phone_pattern = '(\+?\d{1-3})?\D*' + phone_pattern
     phone_re = re.compile( '^' + phone_pattern )
     try:
-	    seg = phone_re.search( in_phone ).groups()
+        seg = phone_re.search( in_phone ).groups()
     except AttributeError:
-	    return [ None, None, None, None, None ]
+        return [ None, None, None, None, None ]
     if international_okay:
         return [ seg[ 2 ], seg[ 3 ], seg[ 4 ], seg[ 6 ], seg[ 0 ] ]
     else:
@@ -85,3 +85,36 @@ def is_phone_valid( in_phone, area_code_required=True, international_okay=True )
     if parts[ 1 ] == None or parts[ 2 ] == None or len( parts[ 1 ] ) != 3 or len( parts[ 2 ] ) != 4:
         out = False
     return out
+
+class UserRights(object):
+    def __init__(self, user=None, event=None):
+        """Constructor.
+
+        Args:
+            user: User() object that you want to perform the check on.
+            event: Event() object that you want to perform the check against if applicable.
+        """
+        self.user = user
+        self.event = event
+        self.is_admin = False
+        self.is_staff = False
+        self.is_owner = False
+        self.can_approve = False
+        self.can_cancel = False
+        self.can_edit = False
+        self.can_staff = False
+        self.can_unstaff = False
+        
+        if self.user:
+            self.is_admin = username(self.user) in dojo('/groups/events')
+            self.is_staff = username(user) in dojo('/groups/staff')
+        if self.event:
+            self.is_owner = (self.user == self.event.member)
+            self.can_approve = (self.event.status in ['pending'] and self.is_admin
+                                and not self.is_owner)
+            self.can_cancel = self.is_admin or self.is_owner
+            self.can_edit = self.is_admin or self.is_owner
+            self.can_staff = (self.event.status in ['pending', 'understaffed', 'approved']
+                              and self.is_staff and self.user not in self.event.staff)
+            self.can_unstaff = (self.event.status not in ['canceled', 'deleted'] 
+                                and self.is_staff and self.user in self.event.staff)

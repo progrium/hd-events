@@ -11,7 +11,7 @@ from pprint import pprint
 from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
-from utils import dojo, username, human_username, set_cookie, local_today, is_phone_valid
+from utils import dojo, username, human_username, set_cookie, local_today, is_phone_valid, UserRights
 from notices import *
 
 class ExpireCron(webapp.RequestHandler):
@@ -63,13 +63,9 @@ class EventHandler(webapp.RequestHandler):
         else:
             user = users.get_current_user()
             if user:
-                is_admin = username(user) in dojo('/groups/events')
-                is_staff = username(user) in dojo('/groups/staff')
-                can_approve = (event.status in ['pending'] and is_admin and not user == event.member)
-                can_staff = (event.status in ['pending', 'understaffed', 'approved'] and is_staff and not user in event.staff)
-                can_unstaff = (not event.status in ['canceled', 'deleted'] and is_staff and user in event.staff)
+                access_rights = UserRights(user, event)
                 logout_url = users.create_logout_url('/')
-                can_cancel = is_admin or user == event.member
+                
             else:
                 login_url = users.create_login_url('/')
             event.details = db.Text(event.details.replace('\n','<br/>'))
@@ -79,26 +75,26 @@ class EventHandler(webapp.RequestHandler):
     def post(self, id):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
-        is_admin = username(user) in dojo('/groups/events')
-        is_staff = True
+        access_rights = UserRights(user, event)
+
         state = self.request.get('state')
         if state:
-            if state.lower() == 'approve' and is_admin:
+            if state.lower() == 'approve' and access_rights.can_approve:
                 event.approve()
-            if state.lower() == 'staff' and is_staff:
+            if state.lower() == 'staff' and access_rights.is_staff:
                 event.add_staff(user)
-            if state.lower() == 'unstaff' and is_staff:
+            if state.lower() == 'unstaff' and access_rights.can_unstaff:
                 event.remove_staff(user)
-                # send notification is state changed to understaffed
-                if event.status == 'understaffed':
-                    notify_unapproved_unstaff_event(event)
-            if state.lower() == 'cancel' and is_admin or event.member == user:
+            # send notification is state changed to understaffed
+            if event.status == 'understaffed':
+                notify_unapproved_unstaff_event(event)
+            if state.lower() == 'cancel' and access_rights.can_cancel:
                 event.cancel()
-            if state.lower() == 'delete' and is_admin:
+            if state.lower() == 'delete' and access_rights.is_admin:
                 event.delete()
-            if state.lower() == 'undelete' and is_admin:
+            if state.lower() == 'undelete' and access_rights.is_admin:
                 event.undelete()
-            if state.lower() == 'expire' and is_admin:
+            if state.lower() == 'expire' and access_rights.is_admin:
                 event.expire()
             if event.status == 'approved':
                 notify_owner_approved(event)
