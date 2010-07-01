@@ -1,15 +1,15 @@
 <html>
-  <head>
-    <title>Hacker Dojo Events</title>
-    <link href="/static/style.css" type="text/css" rel="stylesheet" />
-	<link type="text/css" href="/static/css/blitzer/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
-    <script type="text/javascript" src="/static/js/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="/static/js/jquery.cookies.js"></script>
-	<script type="text/javascript" src="/static/js/jquery-ui-1.8.1.custom.min.js"></script>
-    <script type="text/javascript" src="/static/js/DD_roundies_0.0.2a-min.js"></script>
-    <script type="text/javascript" src="/static/js/hd-events.js"></script>
-  </head>
-  <body>
+	<head>
+		<title>Hacker Dojo Events</title>
+		<link href="/static/style.css" type="text/css" rel="stylesheet" />
+		<link type="text/css" href="/static/css/blitzer/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
+		<script type="text/javascript" src="/static/js/jquery-1.4.2.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.cookies.js"></script>
+		<script type="text/javascript" src="/static/js/jquery-ui-1.8.1.custom.min.js"></script>
+		<script type="text/javascript" src="/static/js/DD_roundies_0.0.2a-min.js"></script>
+		<script type="text/javascript" src="/static/js/hd-events.js"></script>
+	</head>
+	<body>
 		<div id="top">
 			{% if user %}
 			<span><strong>{{user.email}}</strong> | <a href="/myevents">My Events</a> | <a href="{{logout_url}}">Logout</a></span>
@@ -17,16 +17,16 @@
 			<span><a style="font-weight: bold;" href="{{login_url}}">Login</a> | <a href="http://signup.hackerdojo.com/upgrade/needaccount">Need an account?</a></span>
 			{% endif %}
 		</div>
-    <div id="wrapper">
-      <div id="header">
-        <img src="/static/dojo_icon.png" style="float: left;" />
-        <h1>Hacker Dojo</h1>
-        <h2 style="font-size: x-large;">Events</h2>
-      </div>
-      <div id="content">
-        {% block content %}{% endblock %}
-      </div>
-    </div>
+		<div id="wrapper">
+			<div id="header">
+				<img src="/static/dojo_icon.png" style="float: left;" />
+				<h1>Hacker Dojo</h1>
+				<h2 style="font-size: x-large;">Events</h2>
+			</div>
+			<div id="content">
+				{% block content %}{% endblock %}
+			</div>
+		</div>
 
-  </body>
+	</body>
 </html>
