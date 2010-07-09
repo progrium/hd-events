@@ -11,10 +11,12 @@ from pprint import pprint
 from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
-from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights, dojo
+from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights, dojo, is_event_dup
 from notices import *
 
 import PyRSS2Gen
+
+webapp.template.register_template_library('templatefilters')
 
 def event_path(event):
     return '/event/%s-%s' % (event.key().id(), slugify(event.name))
@@ -106,41 +108,59 @@ class EditHandler(webapp.RequestHandler):
         user = users.get_current_user()
         access_rights = UserRights(user, event)
         if access_rights.can_edit:
-          logout_url = users.create_logout_url('/')            
-          rooms = '\n'.join(event.rooms)
-          self.response.out.write(template.render('templates/edit.html', locals()))
+            logout_url = users.create_logout_url('/')            
+            rooms = ROOM_OPTIONS
+            hours = [1,2,3,4,5,6,7,8,9,10,11,12]
+            self.response.out.write(template.render('templates/edit.html', locals()))
         else:
-          self.response.out.write("Access denied")
+            self.response.out.write("Access denied")
 
     def post(self, id):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
         access_rights = UserRights(user, event)
         if access_rights.can_edit:
-          try:
-              if not self.request.get('estimated_size').isdigit():
-                raise ValueError('Estimated number of people must be a number')
-              if not int(self.request.get('estimated_size')) > 0:
-                raise ValueError('Estimated number of people must be greater then zero')
-              if (  self.request.get( 'contact_phone' ) and not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
-                  raise ValueError( 'Phone number does not appear to be valid' )
-              else:
-                  event.name = self.request.get('name')
-                  event.estimated_size = cgi.escape(self.request.get('estimated_size'))
-                  event.contact_name = cgi.escape(self.request.get('contact_name'))
-                  event.contact_phone = cgi.escape(self.request.get('contact_phone'))
-                  event.details = cgi.escape(self.request.get('details'))
-                  event.url = cgi.escape(self.request.get('url'))
-                  event.fee = cgi.escape(self.request.get('fee'))
-                  event.notes = cgi.escape(self.request.get('notes'))
-                  event.rooms = self.request.get('rooms').strip().split("\n")
-                  event.put()
-                  self.redirect(event_path(event))
-          except Exception, e:
-              error = str(e)
-              self.response.out.write(template.render('templates/error.html', locals()))
+            try:
+                srg_date = self.request.get('date')
+                if event.start_time == srg_date:
+                    start_time = start_time
+                else:
+                    st_date = srg_date[0:len(srg_date)-9]
+                    start_time = datetime.strptime('%s %s:%s %s' % (
+                        st_date,
+                        self.request.get('start_time_hour'),
+                        self.request.get('start_time_minute'),
+                        self.request.get('start_time_ampm')), '%Y-%m-%d %I:%M %p')
+                    end_time = datetime.strptime('%s %s:%s %s' % (
+                        st_date,
+                        self.request.get('end_time_hour'),
+                        self.request.get('end_time_minute'),
+                        self.request.get('end_time_ampm')), '%Y-%m-%d %I:%M %p')
+                if not self.request.get('estimated_size').isdigit():
+                    raise ValueError('Estimated number of people must be a number')
+                if not int(self.request.get('estimated_size')) > 0:
+                    raise ValueError('Estimated number of people must be greater then zero')
+                if (  self.request.get( 'contact_phone' ) and not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
+                    raise ValueError( 'Phone number does not appear to be valid' )
+                else:
+                    event.name = self.request.get('name')
+                    event.start_time = start_time
+                    event.end_time = end_time
+                    event.estimated_size = cgi.escape(self.request.get('estimated_size'))
+                    event.contact_name = cgi.escape(self.request.get('contact_name'))
+                    event.contact_phone = cgi.escape(self.request.get('contact_phone'))
+                    event.details = cgi.escape(self.request.get('details'))
+                    event.url = cgi.escape(self.request.get('url'))
+                    event.fee = cgi.escape(self.request.get('fee'))
+                    event.notes = cgi.escape(self.request.get('notes'))
+                    event.rooms = self.request.get_all('rooms')
+                    event.put()
+                    self.redirect(event_path(event))
+            except Exception, e:
+                error = str(e)
+                self.response.out.write(template.render('templates/error.html', locals()))
         else:
-          self.response.out.write("Access denied")
+            self.response.out.write("Access denied")
 
 
 class EventHandler(webapp.RequestHandler):
@@ -233,7 +253,20 @@ class CronBugOwnersHandler(webapp.RequestHandler):
     def get(self):
         events = Event.get_pending_list()
         for e in events:
-          bug_owner_pending(e)
+            bug_owner_pending(e)
+
+
+class AllFutureHandler(webapp.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        events = Event.get_all_future_list()
+        today = local_today()
+        tomorrow = today + timedelta(days=1)
+        self.response.out.write(template.render('templates/all_future.html', locals()))
 
 
 class PendingHandler(webapp.RequestHandler):
@@ -317,10 +350,21 @@ class NewHandler(webapp.RequestHandler):
             error = message
             self.response.out.write(template.render('templates/error.html', locals()))
             
-            
-            
-            
-
+class CheckConflict(webapp.RequestHandler):            
+    def post(self, id):
+        start_time = datetime.strptime('%s %s:%s %s' % (
+            self.request.get('date'),
+            self.request.get('start_time_hour'),
+            self.request.get('start_time_minute'),
+            self.request.get('start_time_ampm')), '%m/%d/%Y %I:%M %p')
+        end_time = datetime.strptime('%s %s:%s %s' % (
+            self.request.get('date'),
+            self.request.get('end_time_hour'),
+            self.request.get('end_time_minute'),
+            self.request.get('end_time_ampm')), '%m/%d/%Y %I:%M %p')
+        rooms = self.request.get_all('rooms')
+        message = is_event_dup(start_date, end_date, rooms)
+        self.response.out.write(message)
 
 class FeedbackHandler(webapp.RequestHandler):
     @util.login_required
@@ -354,6 +398,7 @@ def main():
     application = webapp.WSGIApplication([
         ('/', ApprovedHandler),
         ('/events\.(.+)', EventsHandler),
+        ('/all_future', AllFutureHandler),
         ('/past', PastHandler),
         ('/pending', PendingHandler),
         ('/cronbugowners', CronBugOwnersHandler),
@@ -366,6 +411,7 @@ def main():
         ('/expiring', ExpireReminderCron),
         ('/domaincache', DomainCacheCron),        
         ('/reminder', ReminderCron),
+        ('/check_conflict', CheckConflict),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 

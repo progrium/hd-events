@@ -67,6 +67,12 @@ class Event(db.Model):
     def roomlist(self):
         return to_sentence_list(self.rooms)
 
+    def roomlist_as_phrase(self):
+        if len(self.rooms) > 0:
+            return "in " + self.roomlist()
+        else:
+            return ""
+        
     def is_staffed(self):
         return len(self.staff) >= self.staff_needed()
 
