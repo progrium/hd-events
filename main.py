@@ -147,7 +147,7 @@ class CronBugOwnersHandler(webapp.RequestHandler):
     def get(self):
         events = Event.get_pending_list()
         for e in events:
-          bug_owner_pending(e)
+            bug_owner_pending(e)
 
 
 class PendingHandler(webapp.RequestHandler):
