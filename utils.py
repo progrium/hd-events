@@ -8,7 +8,7 @@ LOCAL_TZ = 'America/Los_Angeles'
 
 # Hacker Dojo Domain API helper with caching
 def dojo(path):
-    base_url = 'http://hackerdojo-domain.appspot.com'
+    base_url = 'http://domain.hackerdojo.com'
     cache_ttl = 3600
     resp = memcache.get(path)
     if not resp:
