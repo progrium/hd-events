@@ -81,7 +81,7 @@ class EventHandler(webapp.RequestHandler):
         if state:
             if state.lower() == 'approve' and access_rights.can_approve:
                 event.approve()
-            if state.lower() == 'staff' and access_rights.is_staff:
+            if state.lower() == 'staff' and access_rights.can_staff:
                 event.add_staff(user)
             if state.lower() == 'unstaff' and access_rights.can_unstaff:
                 event.remove_staff(user)
