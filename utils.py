@@ -97,7 +97,6 @@ class UserRights(object):
         self.user = user
         self.event = event
         self.is_admin = False
-        self.is_staff = False
         self.is_owner = False
         self.can_approve = False
         self.can_cancel = False
@@ -107,7 +106,6 @@ class UserRights(object):
         
         if self.user:
             self.is_admin = username(self.user) in dojo('/groups/events')
-            self.is_staff = username(user) in dojo('/groups/staff')
         if self.event:
             self.is_owner = (self.user == self.event.member)
             self.can_approve = (self.event.status in ['pending'] and self.is_admin
@@ -115,6 +113,6 @@ class UserRights(object):
             self.can_cancel = self.is_admin or self.is_owner
             self.can_edit = self.is_admin or self.is_owner
             self.can_staff = (self.event.status in ['pending', 'understaffed', 'approved']
-                              and self.is_staff and self.user not in self.event.staff)
+                              and self.user not in self.event.staff)
             self.can_unstaff = (self.event.status not in ['canceled', 'deleted'] 
-                                and self.is_staff and self.user in self.event.staff)
+                                and self.user in self.event.staff)
