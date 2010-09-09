@@ -1,0 +1,3 @@
+queue:
+- name: emailthrottle
+  rate: 5/m

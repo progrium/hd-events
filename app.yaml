@@ -27,8 +27,9 @@ handlers:
 - url: /test.*
   login: admin
   script: gaeunit.py
+- url: /_ah/queue/deferred
+  script: $PYTHON_LIB/google/appengine/ext/deferred/handler.py
+  login: admin  
 - url: .*
-  script: main.py
-  
-  
+  script: main.py  
   

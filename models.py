@@ -35,6 +35,7 @@ class Event(db.Model):
     notes       = db.TextProperty()
     type        = db.StringProperty(required=True)
     estimated_size = db.StringProperty(required=True)
+    reminded    = db.BooleanProperty(default=False)
 
     contact_name    = db.StringProperty(required=True)
     contact_phone   = db.StringProperty(required=True)

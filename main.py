@@ -14,6 +14,24 @@ from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
 from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights
 from notices import *
 
+class ReminderCron(webapp.RequestHandler):
+    def post(self):        
+        self.response.out.write("REMINDERS")
+        today = local_today()
+        # remind everyone 3 days in advance they need to show up
+        events = Event.all() \
+            .filter('status IN', ['approved']) \
+            .filter('reminded =', False) \
+            .filter('start_time <', today + timedelta(days=3))
+        for event in events:   
+            self.response.out.write(event.name)
+            # only mail them if they created the event 2+ days ago
+            if event.created < today - timedelta(days=2):
+              schedule_reminder_email(event)
+            event.reminded = True
+            event.put()
+
+
 class ExpireCron(webapp.RequestHandler):
     def post(self):
         # Expire events marked to expire today
@@ -25,7 +43,7 @@ class ExpireCron(webapp.RequestHandler):
         for event in events:
             event.expire()
             notify_owner_expired(event)
-
+            
 
 class ExpireReminderCron(webapp.RequestHandler):
     def post(self):
@@ -85,9 +103,6 @@ class EventHandler(webapp.RequestHandler):
                 event.add_staff(user)
             if state.lower() == 'unstaff' and access_rights.can_unstaff:
                 event.remove_staff(user)
-            # send notification is state changed to understaffed
-            if event.status == 'understaffed':
-                notify_unapproved_unstaff_event(event)
             if state.lower() == 'cancel' and access_rights.can_cancel:
                 event.cancel()
             if state.lower() == 'delete' and access_rights.is_admin:
@@ -215,8 +230,6 @@ class NewHandler(webapp.RequestHandler):
                     )
                 event.put()
                 notify_owner_confirmation(event)
-                if not event.is_staffed():
-                    notify_staff_needed(event)
                 notify_new_event(event)
                 set_cookie(self.response.headers, 'formvalues', None)
                 self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
@@ -272,6 +285,7 @@ def main():
         ('/event/(\d+)\.json', EventHandler),
         ('/expire', ExpireCron),
         ('/expiring', ExpireReminderCron),
+        ('/reminder', ReminderCron),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 

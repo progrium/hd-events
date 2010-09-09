@@ -1,5 +1,7 @@
 from google.appengine.api import mail
 from django.template.defaultfilters import slugify
+from google.appengine.ext import deferred
+import random
 import os
 
 FROM_ADDRESS = 'Dojo Events <no-reply@hackerdojo-events.appspotmail.com>'
@@ -20,17 +22,6 @@ URL: http://%s/event/%s-%s
     e.key().id(),
     slugify(e.name),)
   
-  if e.staff_needed()>0:
-    body += """
-Alert! You still need to get %i more member(s) to staff your event.
-Please get some other Dojo members to go to
-http://%s/event/%s-%s and click the 'Staff' button.
-""" % (
-    e.staff_needed(),
-    os.environ.get('HTTP_HOST'),
-    e.key().id(),
-    slugify(e.name),)
-  
   if not e.is_approved():
     body += """
 Alert! The events team has not approved your event yet.
@@ -38,15 +29,48 @@ Please e-mail them at events@hackerdojo.com to see whats up.
 """
 
   body += """
-Your event is NOT scheduled.  Please remedy the above issues to get your event official.
-"""
 
-  print body
-  print "*" * 80
-    
-  mail.send_mail(sender=FROM_ADDRESS, to=e.member.email(),
+Cheers,
+Hacker Dojo Events Team
+events@hackerdojo.com
+"""
+ 
+  deferred.defer(mail.send_mail, sender=FROM_ADDRESS, to=e.member.email(),
    subject="[Pending Event] Your event is still pending: " + e.name,
-   body=body)
+   body=body, _queue="emailthrottle")
+
+def schedule_reminder_email(e):
+  body = """
+
+*REMINDER*
+
+Event: %s
+Owner: %s
+Date: %s
+URL: http://%s/event/%s-%s
+""" % (
+    e.name, 
+    str(e.owner()),
+    e.start_time.strftime('%A, %B %d'),
+    os.environ.get('HTTP_HOST'),
+    e.key().id(),
+    slugify(e.name),)
+  body += """
+
+Hello!  Friendly reminder that your event is scheduled to happen at Hacker Dojo.
+
+ * The person named above must be physically present
+ * If the event has been cancelled, resecheduled or moved, you must login and cancel the event on our system
+
+Cheers,
+Hacker Dojo Events Team
+events@hackerdojo.com
+
+"""
+ 
+  deferred.defer(mail.send_mail, sender=FROM_ADDRESS, to=e.member.email(),
+   subject="[Event Reminder] " + e.name,
+   body=body, _queue="emailthrottle")
              
 def notify_owner_confirmation(event):
     mail.send_mail(sender=FROM_ADDRESS, to=event.member.email(),
@@ -56,73 +80,20 @@ def notify_owner_confirmation(event):
 %s
 on %s
 
-has been submitted to be approved. If staff is needed for your event, they
-will be notified of your request. You will be notified as soon as it's
+has been submitted to be approved. You will be notified as soon as it's
 approved and on the calendar. Here is a link to the event page:
 
 http://events.hackerdojo.com/event/%s-%s
 
-Again, your event is NOT YET APPROVED and not on the calendar.""" % (
+Again, your event is NOT YET APPROVED and not on the calendar.
+
+Cheers,
+Hacker Dojo Events Team
+events@hackerdojo.com
+
+""" % (
     event.name, 
     event.start_time.strftime('%A, %B %d'),
-    event.key().id(),
-    slugify(event.name),))
-
-
-def notify_staff_needed(event):
-    mail.send_mail(sender=FROM_ADDRESS, to=STAFF_ADDRESS,
-        subject='[Event Staffing] %s on %s' % (event.name, event.start_time.strftime('%a %b %d')),
-        body="""Hello staff!
-
-Fellow member %s is sponsoring a ~%s person event:
-
-%s
-at %s to %s on %s
-
-At %s people expected, %s staff members need to opt in to support this event.
-
-Without your help, this event won't happen. If you can staff this event, click
-the Staff button once logged in on this page:
-
-http://events.hackerdojo.com/event/%s-%s
-""" % (
-    event.member.email(),
-    event.estimated_size,
-    event.name,
-    event.start_time.strftime('%I:%M%p'),
-    event.end_time.strftime('%I:%M%p'),
-    event.start_time.strftime('%A, %B %d'),
-    event.estimated_size,
-    event.staff_needed(),
-    event.key().id(),
-    slugify(event.name),))
-
-
-def notify_unapproved_unstaff_event(event):
-    mail.send_mail(sender=FROM_ADDRESS, to=STAFF_ADDRESS,
-        subject="[Event Unapproved, Needs Staffing] %s on %s" % (event.name, event.start_time.strftime('%a %b %d')),
-        body="""Hello staff!
-
-Unfortunately a staffer can no longer support %s's ~%s person event.
-
-Event Name: %s
-at %s to %s on %s
-
-At %s people expected, %s staff members need to opt in to support this event.
-
-Without your help, this event won't happen. If you can staff this event, click
-the Staff button once logged in on this page:
-
-http://events.hackerdojo.com/event/%s-%s
-""" % (
-    event.member.email(),
-    event.estimated_size,
-    event.name,
-    event.start_time.strftime('%I:%M%p'),
-    event.end_time.strftime('%I:%M%p'),
-    event.start_time.strftime('%A, %B %d'),
-    event.estimated_size,
-    event.staff_needed(),
     event.key().id(),
     slugify(event.name),))
 
@@ -156,16 +127,21 @@ def notify_owner_approved(event):
         subject="[Event Approved] %s" % event.name,
         body="""Your event is approved and on the calendar!
 
-Please notify the event organizer if that is not you. You still need to be
-present at the event! And remember your duties as a Hacker Dojo event sponsor.
+Friendly Reminder: You must be present at the event and make sure Dojo policies are followed.
+
+Note: If you cancel or reschedule the event, please log in to our system and cancel the event!
 
 http://events.hackerdojo.com/event/%s-%s
+
+Cheers,
+Hacker Dojo Events Team
+events@hackerdojo.com
+
 """ % (event.key().id(), slugify(event.name)))
 
 
 def notify_owner_expiring(event):
     pass
-
 
 def notify_owner_expired(event):
     pass
