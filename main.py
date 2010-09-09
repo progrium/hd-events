@@ -11,8 +11,13 @@ from pprint import pprint
 from datetime import datetime, timedelta
 
 from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
-from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights
+from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights, dojo
 from notices import *
+
+class DomainCacheCron(webapp.RequestHandler):
+    def post(self):        
+        noop = dojo('/groups/events',force=True)
+
 
 class ReminderCron(webapp.RequestHandler):
     def post(self):        
@@ -285,6 +290,7 @@ def main():
         ('/event/(\d+)\.json', EventHandler),
         ('/expire', ExpireCron),
         ('/expiring', ExpireReminderCron),
+        ('/domaincache', DomainCacheCron),        
         ('/reminder', ReminderCron),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)

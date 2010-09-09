@@ -7,11 +7,11 @@ import pytz
 LOCAL_TZ = 'America/Los_Angeles'
 
 # Hacker Dojo Domain API helper with caching
-def dojo(path):
+def dojo(path,force):
     base_url = 'http://domain.hackerdojo.com'
     cache_ttl = 3600
     resp = memcache.get(path)
-    if not resp:
+    if force or not resp:
         resp = urlfetch.fetch(base_url + path, deadline=10)
         try:
             resp = simplejson.loads(resp.content)
@@ -105,7 +105,7 @@ class UserRights(object):
         self.can_unstaff = False
         
         if self.user:
-            self.is_admin = username(self.user) in dojo('/groups/events')
+            self.is_admin = username(self.user) in dojo('/groups/events',force=False)
         if self.event:
             self.is_owner = (self.user == self.event.member)
             self.can_approve = (self.event.status in ['pending'] and self.is_admin
