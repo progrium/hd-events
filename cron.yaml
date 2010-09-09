@@ -7,4 +7,5 @@ cron:
   schedule: every 24 hours
 - description: remind people about their event
   url: /reminder
-  schedule: every 1 minute
+  schedule: every 20 minutes
+  
