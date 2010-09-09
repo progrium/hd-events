@@ -10,7 +10,7 @@ import logging, urllib, os
 from pprint import pprint
 from datetime import datetime, timedelta
 
-from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
+from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
 from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights
 from notices import *
 
@@ -167,6 +167,7 @@ class NewHandler(webapp.RequestHandler):
     @util.login_required
     def get(self):
         user = users.get_current_user()
+        human = human_username(user)
         if user:
             logout_url = users.create_logout_url('/')
         else:

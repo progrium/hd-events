@@ -16,7 +16,7 @@ ROOM_OPTIONS = (
     ('Cubby 3', 2),
     ('Upstairs Office', 2),
     ('Front Area', 20))
-GUESTS_PER_STAFF = 25
+# GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
 
 class Event(db.Model):
@@ -57,6 +57,9 @@ class Event(db.Model):
             .filter('status IN', ['pending', 'understaffed', 'onhold', 'expired']) \
             .order('start_time')
 
+    def owner(self):
+        return human_username(self.member)
+        
     def stafflist(self):
         return to_sentence_list(map(human_username, self.staff))
 
@@ -67,11 +70,12 @@ class Event(db.Model):
         return len(self.staff) >= self.staff_needed()
 
     def staff_needed(self):
-      if self.estimated_size.isdigit():
-        return int(self.estimated_size) / GUESTS_PER_STAFF
-      else:
-        # invalid data; just return something reasonable
-        return 2
+      return 0
+#      if self.estimated_size.isdigit():
+#        return int(self.estimated_size) / GUESTS_PER_STAFF
+#      else:
+#        # invalid data; just return something reasonable
+#        return 2
 
     def is_approved(self):
         """Has the events team approved the event?  Note: This does not
