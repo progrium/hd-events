@@ -11,12 +11,22 @@ $(function() {
   // Generic handler for retaining values when form submit errored out
   var formvalues = $.cookie('formvalues');
   if (formvalues) {
-    formvalues = JSON.parse(formvalues);
-    if (formvalues != null) {
-      for (var key in formvalues) {
-        $('[name='+key+']').val(formvalues[key]);
+    try {
+      formvalues = JSON.parse(formvalues);
+      if (formvalues != null) {
+        for (var key in formvalues) {
+          if (key!=rooms) {
+            $('[name='+key+']').val(formvalues[key]);
+          }
+        }      
+        $.each($('[name=rooms]'), function(key, value) { 
+          if ($(value).val()==formvalues["rooms"]) {
+            $(value).attr("checked", "checked");
+          }
+        });
       }
-      $('select[name=type]').val(formvalues['type']);
+    } catch (err) {
+      // noop
     }
   }
 

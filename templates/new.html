@@ -4,19 +4,31 @@
   
 $(function() {
   $("#datepicker").datepicker({minDate: 0});
-  var formvalues = $.cookie('formvalues');
-  if (formvalues) {
-    formvalues = JSON.parse(formvalues);
-    $('#type-select').append('<option>'+formvalues['type']+'</option>');
-    for (var key in formvalues) {
-      $('[name='+key+']').val(formvalues[key]);
+  
+  try {
+    var formvalues = $.cookie('formvalues');
+    if (formvalues) {
+      formvalues = JSON.parse(formvalues);
+      $('#type-select').append('<option>'+formvalues['type']+'</option>');
+      for (var key in formvalues) {
+        if (key!="rooms") {
+          $('[name='+key+']').val(formvalues[key]);
+        }
+      }
+      $.each($('[name=rooms]'), function(key, value) { 
+        if ($(value).val()==formvalues["rooms"]) {
+          $(value).attr("checked", "checked");
+        }        
+      });      
     }
-  }
-  var formerror = $.cookie('formerror');
-  if (formerror) {
-    formerror = JSON.parse(formerror);
-    $('#error').append(formerror);
-    $.cookie('formerror', null);
+    var formerror = $.cookie('formerror');
+    if (formerror) {
+      formerror = JSON.parse(formerror);
+      $('#error').append(formerror);
+      $.cookie('formerror', null);
+    }
+  } catch (err) {
+    // noop
   }
 
 

@@ -37,8 +37,8 @@ class Event(db.Model):
     estimated_size = db.StringProperty(required=True)
     reminded    = db.BooleanProperty(default=False)
 
-    contact_name    = db.StringProperty(required=True)
-    contact_phone   = db.StringProperty(required=True)
+    contact_name    = db.StringProperty()
+    contact_phone   = db.StringProperty()
 
     expired = db.DateTimeProperty()
     created = db.DateTimeProperty(auto_now_add=True)
