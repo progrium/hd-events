@@ -77,6 +77,49 @@ class EventsHandler(webapp.RequestHandler):
             self.response.out.write(simplejson.dumps(events))
 
 
+class EditHandler(webapp.RequestHandler):
+    def get(self, id):
+        event = Event.get_by_id(int(id))
+        user = users.get_current_user()
+        access_rights = UserRights(user, event)
+        if access_rights.can_edit:
+          logout_url = users.create_logout_url('/')            
+          rooms = '\n'.join(event.rooms)
+          self.response.out.write(template.render('templates/edit.html', locals()))
+        else:
+          self.response.out.write("Access denied")
+
+    def post(self, id):
+        event = Event.get_by_id(int(id))
+        user = users.get_current_user()
+        access_rights = UserRights(user, event)
+        if access_rights.can_edit:
+          try:
+              if not self.request.get('estimated_size').isdigit():
+                raise ValueError('Estimated number of people must be a number')
+              if not int(self.request.get('estimated_size')) > 0:
+                raise ValueError('Estimated number of people must be greater then zero')
+              if (  self.request.get( 'contact_phone' ) and not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
+                  raise ValueError( 'Phone number does not appear to be valid' )
+              else:
+                  event.name = self.request.get('name')
+                  event.estimated_size = cgi.escape(self.request.get('estimated_size'))
+                  event.contact_name = cgi.escape(self.request.get('contact_name'))
+                  event.contact_phone = cgi.escape(self.request.get('contact_phone'))
+                  event.details = cgi.escape(self.request.get('details'))
+                  event.url = cgi.escape(self.request.get('url'))
+                  event.fee = cgi.escape(self.request.get('fee'))
+                  event.notes = cgi.escape(self.request.get('notes'))
+                  event.rooms = self.request.get('rooms').strip().split("\n")
+                  event.put()
+                  self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+          except Exception, e:
+              error = str(e)
+              self.response.out.write(template.render('templates/error.html', locals()))
+        else:
+          self.response.out.write("Access denied")
+
+
 class EventHandler(webapp.RequestHandler):
     def get(self, id):
         event = Event.get_by_id(int(id))
@@ -244,9 +287,16 @@ class NewHandler(webapp.RequestHandler):
                 message = 'Date is required.'
             if message.startswith('Property'):
                 message = message[9:].replace('_', ' ').capitalize()
-            set_cookie(self.response.headers, 'formerror', message)
-            set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
-            self.redirect('/new')
+            # This is NOT a reliable way to handle erorrs
+            #set_cookie(self.response.headers, 'formerror', message)
+            #set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
+            #self.redirect('/new')
+            error = message
+            self.response.out.write(template.render('templates/error.html', locals()))
+            
+            
+            
+            
 
 
 class FeedbackHandler(webapp.RequestHandler):
@@ -286,6 +336,7 @@ def main():
         ('/cronbugowners', CronBugOwnersHandler),
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
+        ('/edit/(\d+).*', EditHandler),
         ('/event/(\d+).*', EventHandler),
         ('/event/(\d+)\.json', EventHandler),
         ('/expire', ExpireCron),

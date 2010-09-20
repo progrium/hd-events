@@ -24,7 +24,8 @@ $(function() {
     var formerror = $.cookie('formerror');
     if (formerror) {
       formerror = JSON.parse(formerror);
-      $('#error').append(formerror);
+      $('#warn').hide();
+      $('#error').show("slow").append("<b>Error:</b> "+ formerror);
       $.cookie('formerror', null);
     }
   } catch (err) {
@@ -49,8 +50,9 @@ function hideOther() {
 <div id="primary">
 	<h3>New Event</h3>
 	
-	<div style="margin:4px; margin-bottom:1.5em; padding:8px; border:1px solid #ffe7af; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px; background:#fffaed"><b>{{human}}</b> will be held personally responsible for this event.  You must show up and ensure the rules below are followed.</div>
-
+	<div id="warn" style="margin:4px; margin-bottom:1.5em; padding:8px; border:1px solid #ffe7af; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px; background:#fffaed"><b>{{human}}</b> will be held personally responsible for this event.  You must show up and ensure the rules below are followed.</div>
+  <div style="margin:4px; margin-bottom:1.5em; padding:8px; color: black; display:none; border:1px solid red; background:#fee;  " id="error"></div>
+  
 	<div style="width: 46%; float: right; font-size: smaller; padding: 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; background: #eee; line-height: normal;" id="terms">
 	  <h3 style="margin-top: 0px;">Member Terms as Event Host:</h3>
 	  <ol>
@@ -76,7 +78,7 @@ function hideOther() {
         <div>You are held responsible for damages to Dojo facilities and equipment during your event.</div></li>
     </ol>
 	</div>
-	<span style="color: red; font-size: smaller;" id="error"></span>
+	
 	<form method="post" style="width: 49%;">
 		<h4>Event Name</h4>
 		<input type="text" name="name" style="width: 300px; margin-left: 4px;" />

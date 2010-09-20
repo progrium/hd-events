@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+.b-block input, .b-block textarea {width:75%}
+</style>
+
+<form method=POST>
+<div id="primary">
+    <h3>Edit: {{event.name|title}}</h3>
+    <div class='b-block'><div class='b-label'>Title:</div><div class='b-data'><input type="text" name="name" value="{{event.name|title}}"/></div></div>
+    <div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'><textarea rows=3 name="rooms">{{rooms}}</textarea></div></div>
+    <div class='b-block'><div class='b-label'>Details:</div><div class='b-data'><textarea rows=4 name="details">{{event.details}}</textarea></div></div>
+    <div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'><textarea rows=3 name="notes">{{event.notes}}</textarea></div></div>
+    <div class='b-block'><div class='b-label'>Estimated Size:</div><div class='b-data'><input type="text" name="estimated_size" value="{{event.estimated_size|title}}"/></div></div>
+    <div class='b-block'><div class='b-label'>Contact Name:</div><div class='b-data'><input type="text" name="contact_name" value="{{event.contact_name|title}}"/></div></div>
+    <div class='b-block'><div class='b-label'>Contact Phone:</div><div class='b-data'><input type="text" name="contact_phone" value="{{event.contact_phone|title}}"/></div></div>
+    <div class='b-block'><div class='b-label'>URL:</div><div class='b-data'><input type="text" name="url" value="{{event.url|title}}"/></div></div>
+    <div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'><input type="text" name="fee" value="{{event.fee|title}}"/></div></div>
+    <br/>
+    <input type=submit value="Save">
+</div>
+
+{% endblock %}
