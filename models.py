@@ -160,8 +160,10 @@ class Event(db.Model):
     def to_ical(self):
         event = CalendarEvent()
         event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
-        event.add('dtstart', self.start_time.replace(tzinfo=pytz.timezone('US/Pacific')))
-        event.add('dtend', self.end_time.replace(tzinfo=pytz.timezone('US/Pacific')))
+        if self.start_time:
+          event.add('dtstart', self.start_time.replace(tzinfo=pytz.timezone('US/Pacific')))
+        if self.end_time:
+          event.add('dtend', self.end_time.replace(tzinfo=pytz.timezone('US/Pacific')))
         return event
 
     def to_dict(self, summarize=False):
