@@ -14,6 +14,11 @@ from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
 from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights, dojo
 from notices import *
 
+import PyRSS2Gen
+
+def event_path(event):
+    return '/event/%s-%s' % (event.key().id(), slugify(event.name))
+
 class DomainCacheCron(webapp.RequestHandler):
     def post(self):        
         noop = dojo('/groups/events',force=True)
@@ -64,8 +69,8 @@ class ExpireReminderCron(webapp.RequestHandler):
 
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
+        events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
         if format == 'ics':
-            events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
             cal = Calendar()
             for event in events:
                 cal.add_component(event.to_ical())
@@ -75,6 +80,24 @@ class EventsHandler(webapp.RequestHandler):
             self.response.headers['content-type'] = 'application/json'
             events = map(lambda x: x.to_dict(summarize=True), Event.get_approved_list())
             self.response.out.write(simplejson.dumps(events))
+        elif format =='rss':
+            url_base = 'http://' + self.request.headers.get('host', 'events.hackerdojo.com')
+            rss = PyRSS2Gen.RSS2(
+                title = "Hacker Dojo Events Feed",
+                link = url_base,
+                description = "Upcoming events at the Hacker Dojo in Mountain View, CA",
+                lastBuildDate = datetime.now(),
+                items = [PyRSS2Gen.RSSItem(
+                            title = event.name,
+                            link = url_base + event_path(event),
+                            description = event.details,
+                            guid = url_base + event_path(event),
+                            pubDate = event.updated,
+                         ) for event in events]
+            )
+
+            self.response.headers['content-type'] = 'application/xml'
+            self.response.out.write(rss.to_xml())
 
 
 class EditHandler(webapp.RequestHandler):
@@ -112,7 +135,7 @@ class EditHandler(webapp.RequestHandler):
                   event.notes = cgi.escape(self.request.get('notes'))
                   event.rooms = self.request.get('rooms').strip().split("\n")
                   event.put()
-                  self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+                  self.redirect(event_path(event))
           except Exception, e:
               error = str(e)
               self.response.out.write(template.render('templates/error.html', locals()))
@@ -161,7 +184,7 @@ class EventHandler(webapp.RequestHandler):
                 event.expire()
             if event.status == 'approved':
                 notify_owner_approved(event)
-        self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+        self.redirect(event_path(event))
 
 
 class ApprovedHandler(webapp.RequestHandler):

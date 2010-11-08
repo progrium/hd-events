@@ -1,7 +1,10 @@
 <html>
 	<head>
 		<title>Events at Hacker Dojo</title>
-		<link href="/static/style.css" type="text/css" rel="stylesheet" />
+        <link href="/static/style.css" type="text/css" rel="stylesheet" />
+        {% block feed %}
+            <link rel="alternate" type="application/xml" title="Hacker Dojo events feed" href="/events.rss" />
+        {% endblock %}
 		<link type="text/css" href="/static/css/blitzer/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
 		<script type="text/javascript" src="/static/js/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="/static/js/jquery.cookies.js"></script>
