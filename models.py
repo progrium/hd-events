@@ -169,7 +169,7 @@ class Event(db.Model):
     def to_dict(self, summarize=False):
         d = dict()
         if summarize:
-            props = ['member', 'start_time', 'name', 'type', 'estimated_size']
+            props = ['member', 'start_time', 'name', 'type', 'estimated_size', 'end_time', 'rooms', 'status']
         else:
             props = Event.properties().keys()
         for prop in props:
