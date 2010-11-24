@@ -15,8 +15,9 @@
           {% if access_rights.can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
           {% if access_rights.can_cancel and not event.is_canceled %}<input type="submit" name="state" value="Cancel" />{% endif %}
           {% if access_rights.is_admin %}<input type="submit" name="state" value="Delete" />{% endif %}
-          {% if access_rights.can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
-          {% if access_rights.can_unstaff %}<input type="submit" name="state" value="Unstaff" />{% endif %}
+          {% if access_rights.can_edit %}<input type="button" value="Edit" onclick="document.location.href='/edit/{{event.key.id}}';" />{% endif %}
+          <!--{% if access_rights.can_staff %}<input type="submit" name="state" value="Staff" />{% endif %}
+          {% if access_rights.can_unstaff %}<input type="submit" name="state" value="Unstaff" />{% endif %}-->
         {% endif %}
       </form>
     </p>{% endif %}
@@ -35,11 +36,13 @@
     <div class='b-block'><div class='b-label'>Member:</div><div class='b-data'>{{event.member}}</div></div>
     <div class='b-block'><div class='b-label'>Type:</div><div class='b-data'>{{event.type}}</div></div>
     <div class='b-block'><div class='b-label'>Estimated size:</div><div class='b-data'>{{event.estimated_size}}</div></div>
+    {% if event.contact_name %}
     <div class='b-block'><div class='b-label'>Contact:</div><div class='b-data'>{{event.contact_name}}{% if user %}, {{event.contact_phone}}{% endif %}</div></div>
+    {% endif %} 
     <div class='b-block'><div class='b-label'>URL:</div><div class='b-data'><a href='{{event.url}}'>{{event.url}}</a></div></div>
     <div class='b-block'><div class='b-label'>Fee:</div><div class='b-data'>{{event.fee}}</div></div>
     <div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'>{{event.roomlist}}</div></div>
-    <div class='b-block'><div class='b-label'>Staff:</div><div class='b-data'>{{event.stafflist}}</div></div>
+    <!--<div class='b-block'><div class='b-label'>Staff:</div><div class='b-data'>{{event.stafflist}}</div></div>-->
     <div class='thin-border'></div>
     <div class='b-block'><div class='b-label'>Details:</div><div class='b-data'>{{event.details}}</div></div>
     <br />

@@ -16,7 +16,7 @@ ROOM_OPTIONS = (
     ('Cubby 3', 2),
     ('Upstairs Office', 2),
     ('Front Area', 20))
-GUESTS_PER_STAFF = 25
+# GUESTS_PER_STAFF = 25
 PENDING_LIFETIME = 30 # days
 
 class Event(db.Model):
@@ -35,9 +35,10 @@ class Event(db.Model):
     notes       = db.TextProperty()
     type        = db.StringProperty(required=True)
     estimated_size = db.StringProperty(required=True)
+    reminded    = db.BooleanProperty(default=False)
 
-    contact_name    = db.StringProperty(required=True)
-    contact_phone   = db.StringProperty(required=True)
+    contact_name    = db.StringProperty()
+    contact_phone   = db.StringProperty()
 
     expired = db.DateTimeProperty()
     created = db.DateTimeProperty(auto_now_add=True)
@@ -57,6 +58,9 @@ class Event(db.Model):
             .filter('status IN', ['pending', 'understaffed', 'onhold', 'expired']) \
             .order('start_time')
 
+    def owner(self):
+        return human_username(self.member)
+        
     def stafflist(self):
         return to_sentence_list(map(human_username, self.staff))
 
@@ -73,11 +77,12 @@ class Event(db.Model):
         return len(self.staff) >= self.staff_needed()
 
     def staff_needed(self):
-      if self.estimated_size.isdigit():
-        return int(self.estimated_size) / GUESTS_PER_STAFF
-      else:
-        # invalid data; just return something reasonable
-        return 2
+      return 0
+#      if self.estimated_size.isdigit():
+#        return int(self.estimated_size) / GUESTS_PER_STAFF
+#      else:
+#        # invalid data; just return something reasonable
+#        return 2
 
     def is_approved(self):
         """Has the events team approved the event?  Note: This does not
@@ -161,8 +166,10 @@ class Event(db.Model):
     def to_ical(self):
         event = CalendarEvent()
         event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
-        event.add('dtstart', self.start_time.replace(tzinfo=pytz.timezone('US/Pacific')))
-        event.add('dtend', self.end_time.replace(tzinfo=pytz.timezone('US/Pacific')))
+        if self.start_time:
+          event.add('dtstart', self.start_time.replace(tzinfo=pytz.timezone('US/Pacific')))
+        if self.end_time:
+          event.add('dtend', self.end_time.replace(tzinfo=pytz.timezone('US/Pacific')))
         return event
 
     def to_dict(self, summarize=False):

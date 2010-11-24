@@ -10,9 +10,37 @@ import logging, urllib, os
 from pprint import pprint
 from datetime import datetime, timedelta
 
-from models import Event, Feedback, ROOM_OPTIONS, GUESTS_PER_STAFF, PENDING_LIFETIME
-from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights
+from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
+from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights, dojo
 from notices import *
+
+import PyRSS2Gen
+
+def event_path(event):
+    return '/event/%s-%s' % (event.key().id(), slugify(event.name))
+
+class DomainCacheCron(webapp.RequestHandler):
+    def post(self):        
+        noop = dojo('/groups/events',force=True)
+
+
+class ReminderCron(webapp.RequestHandler):
+    def post(self):        
+        self.response.out.write("REMINDERS")
+        today = local_today()
+        # remind everyone 3 days in advance they need to show up
+        events = Event.all() \
+            .filter('status IN', ['approved']) \
+            .filter('reminded =', False) \
+            .filter('start_time <', today + timedelta(days=3))
+        for event in events:   
+            self.response.out.write(event.name)
+            # only mail them if they created the event 2+ days ago
+            if event.created < today - timedelta(days=2):
+              schedule_reminder_email(event)
+            event.reminded = True
+            event.put()
+
 
 class ExpireCron(webapp.RequestHandler):
     def post(self):
@@ -25,7 +53,7 @@ class ExpireCron(webapp.RequestHandler):
         for event in events:
             event.expire()
             notify_owner_expired(event)
-
+            
 
 class ExpireReminderCron(webapp.RequestHandler):
     def post(self):
@@ -41,8 +69,8 @@ class ExpireReminderCron(webapp.RequestHandler):
 
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
+        events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
         if format == 'ics':
-            events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
             cal = Calendar()
             for event in events:
                 cal.add_component(event.to_ical())
@@ -52,6 +80,67 @@ class EventsHandler(webapp.RequestHandler):
             self.response.headers['content-type'] = 'application/json'
             events = map(lambda x: x.to_dict(summarize=True), Event.get_approved_list())
             self.response.out.write(simplejson.dumps(events))
+        elif format =='rss':
+            url_base = 'http://' + self.request.headers.get('host', 'events.hackerdojo.com')
+            rss = PyRSS2Gen.RSS2(
+                title = "Hacker Dojo Events Feed",
+                link = url_base,
+                description = "Upcoming events at the Hacker Dojo in Mountain View, CA",
+                lastBuildDate = datetime.now(),
+                items = [PyRSS2Gen.RSSItem(
+                            title = event.name,
+                            link = url_base + event_path(event),
+                            description = event.details,
+                            guid = url_base + event_path(event),
+                            pubDate = event.updated,
+                         ) for event in events]
+            )
+
+            self.response.headers['content-type'] = 'application/xml'
+            self.response.out.write(rss.to_xml())
+
+
+class EditHandler(webapp.RequestHandler):
+    def get(self, id):
+        event = Event.get_by_id(int(id))
+        user = users.get_current_user()
+        access_rights = UserRights(user, event)
+        if access_rights.can_edit:
+          logout_url = users.create_logout_url('/')            
+          rooms = '\n'.join(event.rooms)
+          self.response.out.write(template.render('templates/edit.html', locals()))
+        else:
+          self.response.out.write("Access denied")
+
+    def post(self, id):
+        event = Event.get_by_id(int(id))
+        user = users.get_current_user()
+        access_rights = UserRights(user, event)
+        if access_rights.can_edit:
+          try:
+              if not self.request.get('estimated_size').isdigit():
+                raise ValueError('Estimated number of people must be a number')
+              if not int(self.request.get('estimated_size')) > 0:
+                raise ValueError('Estimated number of people must be greater then zero')
+              if (  self.request.get( 'contact_phone' ) and not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
+                  raise ValueError( 'Phone number does not appear to be valid' )
+              else:
+                  event.name = self.request.get('name')
+                  event.estimated_size = cgi.escape(self.request.get('estimated_size'))
+                  event.contact_name = cgi.escape(self.request.get('contact_name'))
+                  event.contact_phone = cgi.escape(self.request.get('contact_phone'))
+                  event.details = cgi.escape(self.request.get('details'))
+                  event.url = cgi.escape(self.request.get('url'))
+                  event.fee = cgi.escape(self.request.get('fee'))
+                  event.notes = cgi.escape(self.request.get('notes'))
+                  event.rooms = self.request.get('rooms').strip().split("\n")
+                  event.put()
+                  self.redirect(event_path(event))
+          except Exception, e:
+              error = str(e)
+              self.response.out.write(template.render('templates/error.html', locals()))
+        else:
+          self.response.out.write("Access denied")
 
 
 class EventHandler(webapp.RequestHandler):
@@ -81,13 +170,10 @@ class EventHandler(webapp.RequestHandler):
         if state:
             if state.lower() == 'approve' and access_rights.can_approve:
                 event.approve()
-            if state.lower() == 'staff' and access_rights.is_staff:
+            if state.lower() == 'staff' and access_rights.can_staff:
                 event.add_staff(user)
             if state.lower() == 'unstaff' and access_rights.can_unstaff:
                 event.remove_staff(user)
-            # send notification is state changed to understaffed
-            if event.status == 'understaffed':
-                notify_unapproved_unstaff_event(event)
             if state.lower() == 'cancel' and access_rights.can_cancel:
                 event.cancel()
             if state.lower() == 'delete' and access_rights.is_admin:
@@ -98,7 +184,7 @@ class EventHandler(webapp.RequestHandler):
                 event.expire()
             if event.status == 'approved':
                 notify_owner_approved(event)
-        self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
+        self.redirect(event_path(event))
 
 
 class ApprovedHandler(webapp.RequestHandler):
@@ -167,6 +253,7 @@ class NewHandler(webapp.RequestHandler):
     @util.login_required
     def get(self):
         user = users.get_current_user()
+        human = human_username(user)
         if user:
             logout_url = users.create_logout_url('/')
         else:
@@ -194,7 +281,7 @@ class NewHandler(webapp.RequestHandler):
               raise ValueError('Estimated number of people must be greater then zero')
             if (end_time-start_time).days < 0:
                 raise ValueError('End time must be after start time')
-            if ( not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
+            if (  self.request.get( 'contact_phone' ) and not is_phone_valid( self.request.get( 'contact_phone' ) ) ):
                 raise ValueError( 'Phone number does not appear to be valid' )
             else:
                 event = Event(
@@ -214,8 +301,6 @@ class NewHandler(webapp.RequestHandler):
                     )
                 event.put()
                 notify_owner_confirmation(event)
-                if not event.is_staffed():
-                    notify_staff_needed(event)
                 notify_new_event(event)
                 set_cookie(self.response.headers, 'formvalues', None)
                 self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
@@ -225,9 +310,16 @@ class NewHandler(webapp.RequestHandler):
                 message = 'Date is required.'
             if message.startswith('Property'):
                 message = message[9:].replace('_', ' ').capitalize()
-            set_cookie(self.response.headers, 'formerror', message)
-            set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
-            self.redirect('/new')
+            # This is NOT a reliable way to handle erorrs
+            #set_cookie(self.response.headers, 'formerror', message)
+            #set_cookie(self.response.headers, 'formvalues', dict(self.request.POST))
+            #self.redirect('/new')
+            error = message
+            self.response.out.write(template.render('templates/error.html', locals()))
+            
+            
+            
+            
 
 
 class FeedbackHandler(webapp.RequestHandler):
@@ -267,10 +359,13 @@ def main():
         ('/cronbugowners', CronBugOwnersHandler),
         ('/myevents', MyEventsHandler),
         ('/new', NewHandler),
+        ('/edit/(\d+).*', EditHandler),
         ('/event/(\d+).*', EventHandler),
         ('/event/(\d+)\.json', EventHandler),
         ('/expire', ExpireCron),
         ('/expiring', ExpireReminderCron),
+        ('/domaincache', DomainCacheCron),        
+        ('/reminder', ReminderCron),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 

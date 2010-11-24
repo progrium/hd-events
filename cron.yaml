@@ -5,3 +5,9 @@ cron:
 - description: reminder of expiring events in 10 days
   url: /expiring
   schedule: every 24 hours
+- description: remind people about their event
+  url: /reminder
+  schedule: every 20 minutes
+- description: cache dojo domain stuff
+  url: /domaincache
+  schedule: every 1 hours

@@ -1,7 +1,10 @@
 <html>
 	<head>
-		<title>Hacker Dojo Events</title>
-		<link href="/static/style.css" type="text/css" rel="stylesheet" />
+		<title>Events at Hacker Dojo</title>
+        <link href="/static/style.css" type="text/css" rel="stylesheet" />
+        {% block feed %}
+            <link rel="alternate" type="application/xml" title="Hacker Dojo events feed" href="/events.rss" />
+        {% endblock %}
 		<link type="text/css" href="/static/css/blitzer/jquery-ui-1.8.1.custom.css" rel="stylesheet" />
 		<script type="text/javascript" src="/static/js/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="/static/js/jquery.cookies.js"></script>
@@ -20,8 +23,8 @@
 		<div id="wrapper">
 			<div id="header">
 				<img src="/static/dojo_icon.png" style="float: left;" />
-				<h1>Hacker Dojo</h1>
-				<h2 style="font-size: x-large;">Events</h2>
+				<h1>Events</h1>
+				<h2 style="font-size: x-large;">at Hacker Dojo</h2>
 			</div>
 			<div id="content">
 				{% block content %}{% endblock %}

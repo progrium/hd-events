@@ -11,7 +11,7 @@
 	<h4>{% ifequal events.grouper today.date %}<span style="text-decoration:underline;">Today</span> - {% endifequal %}{% ifequal events.grouper tomorrow.date %}<span style="text-decoration:underline;">Tomorrow</span> - {% endifequal %}{{events.grouper|date:"l, F j"}}</h4>
 	<table>
 	  {% for event in events.list %}
-		<tr><td width="75">{{event.start_time|date:"g:iA"|lower}}</td><td><a href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a> <span style="color: white; font-size: x-small; padding: 2px; background: gray">{{event.status}}</span> <span class='room-listing'>{{event.roomlist_as_phrase}}</span></td></tr>
+			<tr><td width="75">{{event.start_time|date:"g:iA"|lower}}</td><td><a href="/event/{{event.key.id}}-{{event.name|slugify}}">{{event.name}}</a> <span style="color: white; font-size: x-small; padding: 2px; background: gray">{{event.status}}</span><div style="font-size:80%">Hosted by <a href="mailto:{{event.member.email}}">{{event.owner}}</a> {% if event.roomlist %}in {{event.roomlist}}{% endif %}</div></td></tr>
 		{% endfor %}
 	</table>
 	{% endfor %}
