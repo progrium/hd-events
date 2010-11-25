@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div id="menu" style="float: right; margin: 10px; font-size: smaller;">
-    <a href="/">Approved</a> | Pending | <a href="/new" style="font-weight: bold;">New Event</a>
-</div>
+{% include 'nav_menu.html' %}
 
 <div id="primary">
 	<h3>Pending Events</h3>

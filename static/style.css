@@ -70,3 +70,8 @@ input.dp-applied {
 	width: 85px;
 	float: right;
 }
+
+/* menu */
+#menu {float: right; margin: 10px; font-size: smaller;}
+.emph {font-weight: bold;}
+#menu .current {text-decoration: none; color: #000;}
