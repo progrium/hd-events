@@ -45,6 +45,12 @@ class Event(db.Model):
     updated = db.DateTimeProperty(auto_now=True)
 
     @classmethod
+    def get_all_future_list(cls):
+        return cls.all() \
+            .filter('start_time >', local_today()) \
+            .order('start_time')
+
+    @classmethod
     def get_approved_list(cls):
         return cls.all() \
             .filter('start_time >', local_today()) \
@@ -197,3 +203,11 @@ class Feedback(db.Model):
     rating  = db.IntegerProperty()
     comment = db.StringProperty(multiline=True)
     created = db.DateTimeProperty(auto_now_add=True)
+
+# class EventLog(db.model):
+#     user    = db.UserProperty(auto_current_user_add=True)
+#     event   = db.ReferenceProperty(Event)
+#     rating  = db.IntegerProperty()
+#     comment = db.StringProperty(multiline=True)
+#     created = db.DateTimeProperty(auto_now_add=True)
+    

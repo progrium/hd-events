@@ -42,10 +42,7 @@ function hideOther() {
   $('#type-select').css('display','inline');$('#type-text').css('display','none');
 }
 </script>
-
-<div id="menu" style="float: right; margin: 10px; font-size: smaller;">
-	<a href="/">Approved</a> | <a href="/pending">Pending</a> | <strong>New Event</strong>
-</div>
+{% include 'nav_menu.html' %}
 
 <div id="primary">
 	<h3>New Event</h3>
@@ -63,7 +60,7 @@ function hideOther() {
       <li><strong>Approval</strong>
         <div>The event must be approved by Event Coordinators. We reserve the right to refuse approval of events that are not considered in the spirit of Hacker Dojo.</div></li>
       <li><strong>Setup</strong>
-        <div>You are responsible for your event setup. This may require setting up a day early (or at least an hour or two early!), finding projectors, moving furniture, etc.</div></li>
+        <div>You are responsible for your event setup. This may require setting up a day early (or at least an hour or two early!), finding projectors, moving furniture, etc.<p>In order to prepare you may book a separate event for the same space, just create a new event and select Setup Time as the event type.</div></li>
       <li><strong>Parking</strong>
         <div>We have <a href="http://wiki.hackerdojo.com/Directions#Parking" target="_blank">strict parking rules</a> that you need to convey to guests. If large enough, you may need a staff member to direct parking.</div></li>
       <li><strong>Sign-in</strong>
@@ -143,7 +140,8 @@ function hideOther() {
             <option>Workshop</option>
             <option>Lecture</option>
             <option>Social</option>
-	<option>Dojo Admin</option>
+            <option>Setup Time</option>
+						<option>Dojo Admin</option>
             <option>Other...</option>
           </select><input type="text" id="type-text" onblur="$('#type-select').append('<option>'+this.value+'</option>');$('#type-select').val(this.value);hideOther();" style="display: none;" size="15"></td>
       <td><label for="estimated_size">Expected Size:</label>

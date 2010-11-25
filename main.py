@@ -236,6 +236,19 @@ class CronBugOwnersHandler(webapp.RequestHandler):
             bug_owner_pending(e)
 
 
+class AllFutureHandler(webapp.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        events = Event.get_all_future_list()
+        today = local_today()
+        tomorrow = today + timedelta(days=1)
+        self.response.out.write(template.render('templates/all_future.html', locals()))
+
+
 class PendingHandler(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -354,6 +367,7 @@ def main():
     application = webapp.WSGIApplication([
         ('/', ApprovedHandler),
         ('/events\.(.+)', EventsHandler),
+        ('/all_future', AllFutureHandler),
         ('/past', PastHandler),
         ('/pending', PendingHandler),
         ('/cronbugowners', CronBugOwnersHandler),
