@@ -35,6 +35,6 @@ $(function() {
   curPage = curPage.split("/").pop();
   if('' == curPage) {curPage = 'approved';}
   $('body').addClass(curPage);
-  $('#nav_'+curPage).addClass('current');
-  $('#menu .current').live('click', function(evt) {evt.preventDefault})
+  var old = $('#nav_'+curPage).text();
+  $('#nav_'+curPage).addClass('current').replaceWith(old);
 });
