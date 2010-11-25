@@ -74,4 +74,4 @@ input.dp-applied {
 /* menu */
 #menu {float: right; margin: 10px; font-size: smaller;}
 .emph {font-weight: bold;}
-#menu .current {text-decoration: none; color: #000;}
+#menu .current {text-decoration: none; color: #000; cursor: text;}
