@@ -203,11 +203,3 @@ class Feedback(db.Model):
     rating  = db.IntegerProperty()
     comment = db.StringProperty(multiline=True)
     created = db.DateTimeProperty(auto_now_add=True)
-
-# class EventLog(db.model):
-#     user    = db.UserProperty(auto_current_user_add=True)
-#     event   = db.ReferenceProperty(Event)
-#     rating  = db.IntegerProperty()
-#     comment = db.StringProperty(multiline=True)
-#     created = db.DateTimeProperty(auto_now_add=True)
-    
