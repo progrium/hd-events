@@ -1,15 +1,82 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-.b-block input, .b-block textarea {width:75%}
+	.b-block input, .b-block textarea {width:75%}
+	.checklist input {width: 20px;}
 </style>
+<script type="text/javascript">
+	$(function() {
+	  $("#datepicker").datepicker({minDate: 0});
+		$('#datepicker, #roomlist input, #start_time_hour, #start_time_minute, #start_time_ampm, #end_time_hour, #end_time_minute, #end_time_ampm').blur(checkDup);
+	});
+	
+	function checkDup() {
+		$.post("/check_conflict", function(responseText){ if(responseText=="yes") $("#message").html("Sorry, another event is already using the room(s) at the time you requested"); });
+	}
+</script>
 
 <form method=POST>
 <div id="primary">
     <h3>Edit: {{event.name|title}}</h3>
     <div class='b-block'><div class='b-label'>Title:</div><div class='b-data'><input type="text" name="name" value="{{event.name|title}}"/></div></div>
-    <div class='b-block'><div class='b-label'>Rooms:</div><div class='b-data'><textarea rows=3 name="rooms">{{rooms}}</textarea></div></div>
-    <div class='b-block'><div class='b-label'>Details:</div><div class='b-data'><textarea rows=4 name="details">{{event.details}}</textarea></div></div>
+	  <div class='b-block' id="message">
+		</div>
+	  <div class='b-block'>
+			<div class='b-label'>When:</div>
+			<table style="margin: 0px;" class='b-data'>
+			<tr>
+			  <td class="first"><label for="date">Date:</label>
+	        <input name="date" id="datepicker" value="{{event.start_time}}" readonly="readonly"/></td>
+	      <td><label for="start_time">Start Time:</label>
+          <select name="start_time_hour" id="start_time_hour">
+						{% for hour in hours %}
+            <option {{event.start_time|select_hour:hour}}>{{hour}}</option>
+						{% endfor %}
+           </select>:
+					<select name="start_time_minute" id="start_time_minute">
+            <option {{event.start_time|select_minute:0}}>00</option>
+		  			<option {{event.start_time|select_minute:15}}>15</option>
+            <option {{event.start_time|select_minute:30}}>30</option>
+		  			<option {{event.start_time|select_minute:45}}>45</option>
+          </select> 
+					<select name="start_time_ampm" id="start_time_ampm">
+	          <option {{event.start_time|select_ampm:"pm"}}>pm</option>
+	          <option {{event.start_time|select_ampm:"am"}}>am</option>
+          </select>
+				</td>
+   		</tr>
+			<tr>
+				<td> </td>
+     		<td><label for="end_time">End Time:</label>
+       		<select name="end_time_hour" id="end_time_hour">
+						{% for hour in hours %}
+            <option {{event.end_time|select_hour:hour}}>{{hour}}</option>
+						{% endfor %}
+	        </select>:
+					<select name="end_time_minute" id="end_time_minute">
+            <option {{event.end_time|select_minute:0}}>00</option>
+		  			<option {{event.end_time|select_minute:15}}>15</option>
+            <option {{event.end_time|select_minute:30}}>30</option>
+		  			<option {{event.end_time|select_minute:45}}>45</option>
+       		</select> 
+					<select name="end_time_ampm" id="end_time_ampm">
+	          <option {{event.end_time|select_ampm:"pm"}}>pm</option>
+	          <option {{event.end_time|select_ampm:"am"}}>am</option>
+         	</select>
+				</td>
+			</tr>
+		</table>
+		</div>
+
+    <div class='b-block'>
+			<div class='b-label'>Rooms:<br /><span style="font-size:10; font-weight: normal;">(Capacity in<br/>parentheses)</span></div>
+			<div class='b-data checklist' id="roomlist">
+		    {% for room in rooms %}
+			  <nobr><input type="checkbox" id="room-{{room.0}}" name="rooms" value="{{room.0}}" {{event.rooms|check_filter:room.0}} /><label for="room-{{room.0}}">{{room.0|title}} ({{room.1}})</label></nobr>
+				{% endfor %}
+			</div>
+		</div>
+    <div class='b-block'><div class='b-label'>More Info:</div><div class='b-data'><textarea rows=4 name="details">{{event.details}}</textarea></div></div>
     <div class='b-block'><div class='b-label'>Notes:</div><div class='b-data'><textarea rows=3 name="notes">{{event.notes}}</textarea></div></div>
     <div class='b-block'><div class='b-label'>Estimated Size:</div><div class='b-data'><input type="text" name="estimated_size" value="{{event.estimated_size|title}}"/></div></div>
     <div class='b-block'><div class='b-label'>Contact Name:</div><div class='b-data'><input type="text" name="contact_name" value="{{event.contact_name|title}}"/></div></div>

@@ -86,6 +86,17 @@ def is_phone_valid( in_phone, area_code_required=True, international_okay=True )
         out = False
     return out
 
+def is_event_dup(start_date, end_date, rooms):
+    events = Event.get_all_future_list()
+    time_matches = events.filter('start_time >', start_date).filter('end_time >', end_date)
+    if len(time_matches) > 0:
+        for tm in time_matches:
+            for tmroom in tm.rooms:
+                for room in rooms:
+                    if room == tmroom:
+                        return "yes"
+    return "no"
+    
 class UserRights(object):
     def __init__(self, user=None, event=None):
         """Constructor.

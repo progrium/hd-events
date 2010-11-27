@@ -47,6 +47,8 @@ h4 { font-size: smaller; }
 .thin-border {height: 2px;}
 .thinner-border {height: 1px;}
 
+.room-listing {font-size: 90%;}
+
 /* for DatePicker widget */
 a.dp-choose-date {
 	float: left;
@@ -70,3 +72,8 @@ input.dp-applied {
 	width: 85px;
 	float: right;
 }
+
+/* menu */
+#menu {float: right; margin: 10px; font-size: smaller;}
+.emph {font-weight: bold;}
+#menu .current {text-decoration: none; color: #000; cursor: text;}

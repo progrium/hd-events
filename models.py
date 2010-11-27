@@ -45,6 +45,12 @@ class Event(db.Model):
     updated = db.DateTimeProperty(auto_now=True)
 
     @classmethod
+    def get_all_future_list(cls):
+        return cls.all() \
+            .filter('start_time >', local_today()) \
+            .order('start_time')
+
+    @classmethod
     def get_approved_list(cls):
         return cls.all() \
             .filter('start_time >', local_today()) \
@@ -67,6 +73,12 @@ class Event(db.Model):
     def roomlist(self):
         return to_sentence_list(self.rooms)
 
+    def roomlist_as_phrase(self):
+        if len(self.rooms) > 0:
+            return "in " + self.roomlist()
+        else:
+            return ""
+        
     def is_staffed(self):
         return len(self.staff) >= self.staff_needed()
 

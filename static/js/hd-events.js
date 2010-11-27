@@ -29,5 +29,12 @@ $(function() {
       // noop
     }
   }
-
+  
+  // set body class to current page for nav menu use
+  var curPage = location.pathname;
+  curPage = curPage.split("/").pop();
+  if('' == curPage) {curPage = 'approved';}
+  $('body').addClass(curPage);
+  var old = $('#nav_'+curPage).text();
+  $('#nav_'+curPage).addClass('current').replaceWith(old);
 });

@@ -1,9 +1,9 @@
-{% extends whichbase %}
+{% extends 'base.html' %}
 {% block content %}
 {% include 'nav_menu.html' %}
 
 <div id="primary">
-	{% ifnotequal whichbase "mini.html" %}<h3>Upcoming Events</h3>{% endifnotequal %}
+	{% ifnotequal whichbase "mini.html" %}<h3>All Events</h3>{% endifnotequal %}
 
 	{% regroup events by start_date as grouped_events %}
 	{% for events in grouped_events %}
