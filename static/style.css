@@ -1,5 +1,5 @@
 body { font-family: Verdana,Arial,sans-serif; margin: 0px;}
-#wrapper { margin-left: auto; margin-right: auto; width: 700px; position: relative;}
+#wrapper, #top > div { margin-left: auto; margin-right: auto; width: 700px; position: relative;}
 
 #top a:visited { color: blue;}
 #top { height: 20px; border-bottom: 1px solid #ccc; text-align: right; font-size: 12px; padding-right: 5px; padding-top: 4px; }
@@ -8,8 +8,9 @@ body { font-family: Verdana,Arial,sans-serif; margin: 0px;}
 #header img { margin-right: 10px;}
 #header h1 { font-size: 42px; margin-top: 20px; padding-top: 10px; margin-bottom: 0px; padding-bottom: 0px;}
 #header h2 { font-size: x-large; margin: 0px; }
-#new-event-link {position: absolute; right: 10px; padding: 3px 5px; background-color:#d50025;}
+#new-event-link {position: absolute; right: 0px; padding: 3px 5px; background-color:#d50025;}
 #new-event-link a {color: #fff; text-decoration: none;}
+body.new #new-event-link {display: none;}
 
 .step span { color: white; background-color: #b10026; padding: 1px; padding-left: 4px; padding-right: 4px;}
 .step.inactive span { background-color: gray;}
@@ -27,6 +28,10 @@ table td.first { width: 110px; padding-right: 20px; }
 #terms ol { padding-left: 25px;}
 #terms li { margin-top: 10px;}
 nobr label { display: inline;}
+
+#log-list {width:100%;}
+#log-list th {text-align: left;}
+#log-list .desc-line {border-bottom: 1px solid #e0e0e0; line-height: 5px;}
 
 form div { margin-top: 10px; }
 

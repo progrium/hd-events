@@ -10,7 +10,7 @@ import logging, urllib, os
 from pprint import pprint
 from datetime import datetime, timedelta
 
-from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
+from models import Event, Feedback, HDLog, ROOM_OPTIONS, PENDING_LIFETIME
 from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights, dojo, is_event_dup
 from notices import *
 
@@ -158,8 +158,11 @@ class EditHandler(webapp.RequestHandler):
                     event.notes = cgi.escape(self.request.get('notes'))
                     event.rooms = self.request.get_all('rooms')
                     event.put()
+                    log = HDLog(event=event,description="edited something")
+                    log.put()
+                    logging.info('%s %s %s' % (log.user.nickname, log.event.name, log.description))
                     self.redirect(event_path(event))
-            except Exception, e:
+            except ValueError, e:
                 error = str(e)
                 self.response.out.write(template.render('templates/error.html', locals()))
         else:
@@ -375,6 +378,18 @@ class CheckConflict(webapp.RequestHandler):
         message = is_event_dup(start_date, end_date, rooms)
         self.response.out.write(message)
 
+class LogsHandler(webapp.RequestHandler):
+    @util.login_required
+    def get(self):
+        user = users.get_current_user()
+        logs = HDLog.get_logs_list()
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        show_all_nav = (user.nickname)
+        self.response.out.write(template.render('templates/logs.html', locals()))
+
 class FeedbackHandler(webapp.RequestHandler):
     @util.login_required
     def get(self, id):
@@ -421,6 +436,7 @@ def main():
         ('/domaincache', DomainCacheCron),        
         ('/reminder', ReminderCron),
         ('/check_conflict', CheckConflict),
+        ('/logs', LogsHandler),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 
