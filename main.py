@@ -158,9 +158,8 @@ class EditHandler(webapp.RequestHandler):
                     event.notes = cgi.escape(self.request.get('notes'))
                     event.rooms = self.request.get_all('rooms')
                     event.put()
-                    log = HDLog(event=event,description="edited something")
+                    log = HDLog(event=event,description="Edited event")
                     log.put()
-                    logging.info('%s %s %s' % (log.user.nickname, log.event.name, log.description))
                     self.redirect(event_path(event))
             except ValueError, e:
                 error = str(e)
@@ -195,22 +194,33 @@ class EventHandler(webapp.RequestHandler):
 
         state = self.request.get('state')
         if state:
+            desc = ''
             if state.lower() == 'approve' and access_rights.can_approve:
                 event.approve()
+                desc = 'Approved event'
             if state.lower() == 'staff' and access_rights.can_staff:
                 event.add_staff(user)
+                desc = 'Added self as staff'
             if state.lower() == 'unstaff' and access_rights.can_unstaff:
                 event.remove_staff(user)
+                desc = 'Removed self as staff'
             if state.lower() == 'cancel' and access_rights.can_cancel:
                 event.cancel()
+                desc = 'Cancelled event'
             if state.lower() == 'delete' and access_rights.is_admin:
                 event.delete()
+                desc = 'Deleted event'
             if state.lower() == 'undelete' and access_rights.is_admin:
                 event.undelete()
+                desc = 'Undeleted event'
             if state.lower() == 'expire' and access_rights.is_admin:
                 event.expire()
+                desc = 'Expired event'
             if event.status == 'approved':
                 notify_owner_approved(event)
+            if desc != '':
+                log = HDLog(event=event,description=desc)
+                log.put()
         self.redirect(event_path(event))
 
 
@@ -345,6 +355,8 @@ class NewHandler(webapp.RequestHandler):
                     expired = local_today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
                     )
                 event.put()
+                log = HDLog(event=event,description="Created new event")
+                log.put()
                 notify_owner_confirmation(event)
                 notify_new_event(event)
                 set_cookie(self.response.headers, 'formvalues', None)
@@ -411,6 +423,8 @@ class FeedbackHandler(webapp.RequestHandler):
                     rating = int(self.request.get('rating')),
                     comment = cgi.escape(self.request.get('comment')))
                 feedback.put()
+                log = HDLog(event=event,description="Posted feedback")
+                log.put()
                 self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
             else:
                 raise ValueError('Please select a rating')

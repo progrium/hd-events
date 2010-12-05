@@ -7,14 +7,14 @@
 
 	<table id='log-list'>
 		<tr>
-			<th style='width:110px;'>Timestamp</th>
-			<th style='width:220px;'>Member</th>
+			<th style='width:30%;'>Timestamp</th>
+			<th style='width:30%;'>Member</th>
 			<th>Event</th>
 		</tr>
 	  {% for log in logs %}
 			<tr>
 				<td>{{log.created|date:"b j Y"|title}} {{log.created|date:"g:i A"|lower}}</td>
-				<td>{{log.user.nickname}}</td>
+				<td><a href="mailto:{{log.user.nickname}}?subject={{log.event.name}}">{{log.user.nickname}}</a></td>
 				<td><a href="/event/{{log.event.key.id}}-{{log.event.name|slugify}}">{{log.event.name}}</a></td>
 			</tr>
 			<tr>
