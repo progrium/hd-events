@@ -41,12 +41,11 @@ function hideOther() {
   $('#type-select').css('display','inline');$('#type-text').css('display','none');
 }
 </script>
-{% include 'nav_menu.html' %}
 
 <div id="primary">
 	<h3>New Event</h3>
 	
-	<div id="warn" style="margin:4px; margin-bottom:1.5em; padding:8px; border:1px solid #ffe7af; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px; background:#fffaed"><b>{{human}}</b> will be held personally responsible for this event.  You must show up and ensure the rules below are followed.</div>
+	<div id="warn" style="margin:4px; margin-bottom:1.5em; padding:8px; border:1px solid #ffe7af; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px; background:#fffaed"><b>{{human}}</b> will be held personally responsible for this event.  You must show up and ensure the rules below are followed.  Failure to make a good faith effort will result in suspension of event hosting privileges for 45 days.</div>
   <div style="margin:4px; margin-bottom:1.5em; padding:8px; color: black; display:none; border:1px solid red; background:#fee;  " id="error"></div>
   
 	<div style="width: 46%; float: right; font-size: smaller; padding: 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; background: #eee; line-height: normal;" id="terms">
@@ -55,7 +54,7 @@ function hideOther() {
 	    <li><strong>Schedule</strong>
 	      <div>Dojo resources are allocated on a first come, first serve basis. Avoid scheduling major events on the same day. Otherwise, expect an Events Coordinator to suggest an alternate time or room.</div></li>
       <li><strong>Presence</strong>
-        <div>{{human}} must be physically present for the event. You need to be there to ensure the event runs smoothly and the rules are enforced. If the event is cancelled, you are responsible for cancelling the event on this system.<p>If you are submitting this application on behalf of someone else, you will still be held responsible.</div></li>
+        <div>{{human}} or one of your delegates must be physically present to host the entire event. Delegates must also be members of Hacker Dojo, and must be arranged prior to the event's submission. As event host, you take full responsibility for ensuring the event runs smoothly and the rules are enforced. If the event is cancelled, you are responsible for cancelling the event on this system and posting notice to all forums in which you advertised the event. <p>If you are submitting this application on behalf of someone else, you will still be held responsible.</div></li>
       <li><strong>Approval</strong>
         <div>The event must be approved by Event Coordinators. We reserve the right to refuse approval of events that are not considered in the spirit of Hacker Dojo.</div></li>
       <li><strong>Setup</strong>

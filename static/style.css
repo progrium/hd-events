@@ -8,7 +8,7 @@ body { font-family: Verdana,Arial,sans-serif; margin: 0px;}
 #header img { margin-right: 10px;}
 #header h1 { font-size: 42px; margin-top: 20px; padding-top: 10px; margin-bottom: 0px; padding-bottom: 0px;}
 #header h2 { font-size: x-large; margin: 0px; }
-#new-event-link {position: absolute; right: 0px; padding: 3px 5px; background-color:#d50025;}
+#new-event-link {position: absolute; right: 0px; padding: 2px 2px; background-color:#d50025;}
 #new-event-link a {color: #fff; text-decoration: none;}
 body.new #new-event-link {display: none;}
 

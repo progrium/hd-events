@@ -73,7 +73,7 @@ class EventsHandler(webapp.RequestHandler):
     def get(self, format):
         events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
         access_rights = UserRights(user, event)
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         if format == 'ics':
             cal = Calendar()
             for event in events:
@@ -108,7 +108,7 @@ class EditHandler(webapp.RequestHandler):
     def get(self, id):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         access_rights = UserRights(user, event)
         if access_rights.can_edit:
             logout_url = users.create_logout_url('/')            
@@ -183,7 +183,7 @@ class EventHandler(webapp.RequestHandler):
             else:
                 login_url = users.create_login_url('/')
             event.details = db.Text(event.details.replace('\n','<br/>'))
-            show_all_nav = (user.nickname)
+            show_all_nav = user
             event.notes = db.Text(event.notes.replace('\n','<br/>'))
             self.response.out.write(template.render('templates/event.html', locals()))
 
@@ -232,7 +232,7 @@ class ApprovedHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         today = local_today()
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         events = Event.get_approved_list()
         tomorrow = today + timedelta(days=1)
         whichbase = 'base.html'
@@ -250,7 +250,7 @@ class MyEventsHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         events = Event.all().filter('member = ', user).order('start_time')
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         today = local_today()
         tomorrow = today + timedelta(days=1)
         self.response.out.write(template.render('templates/myevents.html', locals()))
@@ -264,7 +264,7 @@ class PastHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         today = local_today()
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         events = Event.all().filter('start_time < ', today).order('-start_time')
         self.response.out.write(template.render('templates/past.html', locals()))
 
@@ -283,7 +283,7 @@ class AllFutureHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         events = Event.get_all_future_list()
         today = local_today()
         tomorrow = today + timedelta(days=1)
@@ -298,7 +298,7 @@ class PendingHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         events = Event.get_pending_list()
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         today = local_today()
         tomorrow = today + timedelta(days=1)
         self.response.out.write(template.render('templates/pending.html', locals()))
@@ -399,7 +399,7 @@ class LogsHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
-        show_all_nav = (user.nickname)
+        show_all_nav = user
         self.response.out.write(template.render('templates/logs.html', locals()))
 
 class FeedbackHandler(webapp.RequestHandler):
