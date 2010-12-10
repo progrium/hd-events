@@ -25,9 +25,11 @@
 		<div id="wrapper">
 			<div id="header">
 				<form action="/new" method="get"><div id='new-event-link'><button type="submit" id="nav_new" class="emph">New Event</button></div></form>
-				<img src="/static/dojo_icon.png" style="float: left;" />
-				<h1>Events</h1>
-				<h2 style="font-size: x-large;">at Hacker Dojo</h2>
+				<div onclick="document.location.href='/';" style="cursor:pointer">
+  				<img src="/static/dojo_icon.png" style="float: left;" />
+  				<h1>Events</h1>
+  				<h2 style="font-size: x-large;">at Hacker Dojo</h2>
+				</div>
 			</div>
 			<div id="content">
 				{% block content %}{% endblock %}
