@@ -96,7 +96,12 @@ def is_event_dup(start_date, end_date, rooms):
                     if room == tmroom:
                         return "yes"
     return "no"
-    
+
+def user_is_admin():
+    user = users.get_current_user()
+    access_rights = UserRights(user)
+    return access_rights.is_admin
+
 class UserRights(object):
     def __init__(self, user=None, event=None):
         """Constructor.

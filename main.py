@@ -10,7 +10,7 @@ import logging, urllib, os
 from pprint import pprint
 from datetime import datetime, timedelta
 
-from models import Event, Feedback, ROOM_OPTIONS, PENDING_LIFETIME
+from models import Event, Feedback, HDLog, ROOM_OPTIONS, PENDING_LIFETIME
 from utils import username, human_username, set_cookie, local_today, is_phone_valid, UserRights, dojo, is_event_dup
 from notices import *
 
@@ -72,6 +72,8 @@ class ExpireReminderCron(webapp.RequestHandler):
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
         events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
+        access_rights = UserRights(user, event)
+        show_all_nav = (user.nickname)
         if format == 'ics':
             cal = Calendar()
             for event in events:
@@ -106,10 +108,10 @@ class EditHandler(webapp.RequestHandler):
     def get(self, id):
         event = Event.get_by_id(int(id))
         user = users.get_current_user()
+        show_all_nav = (user.nickname)
         access_rights = UserRights(user, event)
         if access_rights.can_edit:
             logout_url = users.create_logout_url('/')            
-            # rooms = '\n'.join(event.rooms)
             rooms = ROOM_OPTIONS
             hours = [1,2,3,4,5,6,7,8,9,10,11,12]
             self.response.out.write(template.render('templates/edit.html', locals()))
@@ -156,8 +158,10 @@ class EditHandler(webapp.RequestHandler):
                     event.notes = cgi.escape(self.request.get('notes'))
                     event.rooms = self.request.get_all('rooms')
                     event.put()
+                    log = HDLog(event=event,description="Edited event")
+                    log.put()
                     self.redirect(event_path(event))
-            except Exception, e:
+            except ValueError, e:
                 error = str(e)
                 self.response.out.write(template.render('templates/error.html', locals()))
         else:
@@ -179,6 +183,7 @@ class EventHandler(webapp.RequestHandler):
             else:
                 login_url = users.create_login_url('/')
             event.details = db.Text(event.details.replace('\n','<br/>'))
+            show_all_nav = (user.nickname)
             event.notes = db.Text(event.notes.replace('\n','<br/>'))
             self.response.out.write(template.render('templates/event.html', locals()))
 
@@ -189,22 +194,33 @@ class EventHandler(webapp.RequestHandler):
 
         state = self.request.get('state')
         if state:
+            desc = ''
             if state.lower() == 'approve' and access_rights.can_approve:
                 event.approve()
+                desc = 'Approved event'
             if state.lower() == 'staff' and access_rights.can_staff:
                 event.add_staff(user)
+                desc = 'Added self as staff'
             if state.lower() == 'unstaff' and access_rights.can_unstaff:
                 event.remove_staff(user)
+                desc = 'Removed self as staff'
             if state.lower() == 'cancel' and access_rights.can_cancel:
                 event.cancel()
+                desc = 'Cancelled event'
             if state.lower() == 'delete' and access_rights.is_admin:
                 event.delete()
+                desc = 'Deleted event'
             if state.lower() == 'undelete' and access_rights.is_admin:
                 event.undelete()
+                desc = 'Undeleted event'
             if state.lower() == 'expire' and access_rights.is_admin:
                 event.expire()
+                desc = 'Expired event'
             if event.status == 'approved':
                 notify_owner_approved(event)
+            if desc != '':
+                log = HDLog(event=event,description=desc)
+                log.put()
         self.redirect(event_path(event))
 
 
@@ -216,6 +232,7 @@ class ApprovedHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         today = local_today()
+        show_all_nav = (user.nickname)
         events = Event.get_approved_list()
         tomorrow = today + timedelta(days=1)
         whichbase = 'base.html'
@@ -233,6 +250,7 @@ class MyEventsHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         events = Event.all().filter('member = ', user).order('start_time')
+        show_all_nav = (user.nickname)
         today = local_today()
         tomorrow = today + timedelta(days=1)
         self.response.out.write(template.render('templates/myevents.html', locals()))
@@ -246,6 +264,7 @@ class PastHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         today = local_today()
+        show_all_nav = (user.nickname)
         events = Event.all().filter('start_time < ', today).order('-start_time')
         self.response.out.write(template.render('templates/past.html', locals()))
 
@@ -264,6 +283,7 @@ class AllFutureHandler(webapp.RequestHandler):
             logout_url = users.create_logout_url('/')
         else:
             login_url = users.create_login_url('/')
+        show_all_nav = (user.nickname)
         events = Event.get_all_future_list()
         today = local_today()
         tomorrow = today + timedelta(days=1)
@@ -278,6 +298,7 @@ class PendingHandler(webapp.RequestHandler):
         else:
             login_url = users.create_login_url('/')
         events = Event.get_pending_list()
+        show_all_nav = (user.nickname)
         today = local_today()
         tomorrow = today + timedelta(days=1)
         self.response.out.write(template.render('templates/pending.html', locals()))
@@ -334,6 +355,8 @@ class NewHandler(webapp.RequestHandler):
                     expired = local_today() + timedelta(days=PENDING_LIFETIME), # Set expected expiration date
                     )
                 event.put()
+                log = HDLog(event=event,description="Created new event")
+                log.put()
                 notify_owner_confirmation(event)
                 notify_new_event(event)
                 set_cookie(self.response.headers, 'formvalues', None)
@@ -367,6 +390,18 @@ class CheckConflict(webapp.RequestHandler):
         message = is_event_dup(start_date, end_date, rooms)
         self.response.out.write(message)
 
+class LogsHandler(webapp.RequestHandler):
+    @util.login_required
+    def get(self):
+        user = users.get_current_user()
+        logs = HDLog.get_logs_list()
+        if user:
+            logout_url = users.create_logout_url('/')
+        else:
+            login_url = users.create_login_url('/')
+        show_all_nav = (user.nickname)
+        self.response.out.write(template.render('templates/logs.html', locals()))
+
 class FeedbackHandler(webapp.RequestHandler):
     @util.login_required
     def get(self, id):
@@ -388,6 +423,8 @@ class FeedbackHandler(webapp.RequestHandler):
                     rating = int(self.request.get('rating')),
                     comment = cgi.escape(self.request.get('comment')))
                 feedback.put()
+                log = HDLog(event=event,description="Posted feedback")
+                log.put()
                 self.redirect('/event/%s-%s' % (event.key().id(), slugify(event.name)))
             else:
                 raise ValueError('Please select a rating')
@@ -413,6 +450,7 @@ def main():
         ('/domaincache', DomainCacheCron),        
         ('/reminder', ReminderCron),
         ('/check_conflict', CheckConflict),
+        ('/logs', LogsHandler),
         ('/feedback/new/(\d+).*', FeedbackHandler) ],debug=True)
     util.run_wsgi_app(application)
 

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'nav_menu.html' %}
+
+<div id="primary">
+	<h3>Event App Logs</h3>
+
+	<table id='log-list'>
+		<tr>
+			<th style='width:30%;'>Timestamp</th>
+			<th style='width:30%;'>Member</th>
+			<th>Event</th>
+		</tr>
+	  {% for log in logs %}
+			<tr>
+				<td>{{log.created|date:"b j Y"|title}} {{log.created|date:"g:i A"|lower}}</td>
+				<td><a href="mailto:{{log.user.nickname}}?subject={{log.event.name}}">{{log.user.nickname}}</a></td>
+				<td><a href="/event/{{log.event.key.id}}-{{log.event.name|slugify}}">{{log.event.name}}</a></td>
+			</tr>
+			<tr>
+				<td colspan='3'>{{log.description}}</td>
+			</tr>
+			<tr class='desc-line'><td colspan='3'>&nbsp;</td>
+			</tr>
+		{% endfor %}
+	</table>
+	{% if false %}
+  <p style="font-size: x-small;">Alternative formats: <a href="/events.ics">iCal</a> | <a href="/events.rss">RSS</a> | JSON</p>
+	{% endif %}
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@ var rounder = function(elem, sz, allBrowsers) {
   DD_roundies.addRule(elem, sz.toString()+'px', allBrowsers);
 }
 $(function() {
-  var rndrs = ['#primary'];
+  var rndrs = ['#primary', '#new-event-link'];
   for(r in rndrs) {
     rounder(rndrs[r], 8, true);
   }

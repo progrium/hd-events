@@ -14,14 +14,17 @@
 	</head>
 	<body>
 		<div id="top">
-			{% if user %}
-			<span><strong>{{user.email}}</strong> | <a href="/myevents">My Events</a> | <a href="{{logout_url}}">Logout</a></span>
-			{% else %}
-			<span><a style="font-weight: bold;" href="{{login_url}}">Login</a> | <a href="http://signup.hackerdojo.com/upgrade/needaccount">Need an account?</a></span>
-			{% endif %}
+			<div>
+				{% if user %}
+					<strong>{{user.email}}</strong> | <a href="/myevents">My Events</a> | <a href="{{logout_url}}">Logout</a>
+				{% else %}
+					<a style="font-weight: bold;" href="{{login_url}}">Login</a> | <a href="http://signup.hackerdojo.com/upgrade/needaccount">Need an account?</a>
+				{% endif %}
+			</div>
 		</div>
 		<div id="wrapper">
 			<div id="header">
+				<span id='new-event-link'><form action="/new" method="get"><button type="submit" id="nav_new" class="emph">New Event</button></form></span>
 				<img src="/static/dojo_icon.png" style="float: left;" />
 				<h1>Events</h1>
 				<h2 style="font-size: x-large;">at Hacker Dojo</h2>
