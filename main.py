@@ -72,8 +72,6 @@ class ExpireReminderCron(webapp.RequestHandler):
 class EventsHandler(webapp.RequestHandler):
     def get(self, format):
         events = Event.all().filter('status IN', ['approved', 'canceled']).order('start_time')
-        access_rights = UserRights(user, event)
-        show_all_nav = user
         if format == 'ics':
             cal = Calendar()
             for event in events:
