@@ -173,7 +173,7 @@ class Event(db.Model):
         event = CalendarEvent()
         event.add('summary', self.name if self.status == 'approved' else self.name + ' (%s)' % self.status.upper())
         if self.url:
-            event.add('url', self.url)
+          event.add('url', self.url)
         if self.start_time:
           event.add('dtstart', self.start_time.replace(tzinfo=pytz.timezone('US/Pacific')))
         if self.end_time:
