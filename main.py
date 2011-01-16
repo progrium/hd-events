@@ -202,6 +202,9 @@ class EventHandler(webapp.RequestHandler):
             if state.lower() == 'unstaff' and access_rights.can_unstaff:
                 event.remove_staff(user)
                 desc = 'Removed self as staff'
+            if state.lower() == 'onhold' and access_rights.can_cancel:
+                event.on_hold()
+                desc = 'Put event on hold'
             if state.lower() == 'cancel' and access_rights.can_cancel:
                 event.cancel()
                 desc = 'Cancelled event'

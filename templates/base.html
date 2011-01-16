@@ -15,6 +15,7 @@
 	<body>
 		<div id="top">
 			<div>
+				<span id="contact-link"><a href="mailto:events@hackerdojo.com">Contact Events Team</a></span>
 				{% if user %}
 					<strong>{{user.email}}</strong> | <a href="/myevents">My Events</a> | <a href="{{logout_url}}">Logout</a>
 				{% else %}
