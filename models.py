@@ -99,6 +99,9 @@ class Event(db.Model):
     def is_canceled(self):
         return self.status == 'canceled'
 
+    def is_onhold(self):
+        return self.status == 'onhold'
+
     def is_deleted(self):
         return self.status == 'deleted'
 

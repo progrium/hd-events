@@ -124,7 +124,7 @@ class UserRights(object):
             self.is_admin = username(self.user) in dojo('/groups/events',force=False)
         if self.event:
             self.is_owner = (self.user == self.event.member)
-            self.can_approve = (self.event.status in ['pending'] and self.is_admin
+            self.can_approve = ((self.event.status in ['pending'] or self.event.status in ['onhold']) and self.is_admin
                                 and not self.is_owner)
             self.can_cancel = self.is_admin or self.is_owner
             self.can_edit = self.is_admin or self.is_owner
