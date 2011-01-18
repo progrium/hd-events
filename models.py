@@ -48,6 +48,7 @@ class Event(db.Model):
     def get_all_future_list(cls):
         return cls.all() \
             .filter('start_time >', local_today()) \
+            .filter('status IN', ['approved', 'canceled', 'pending', 'onhold']) \
             .order('start_time')
 
     @classmethod
@@ -98,6 +99,9 @@ class Event(db.Model):
     def is_canceled(self):
         return self.status == 'canceled'
 
+    def is_onhold(self):
+        return self.status == 'onhold'
+
     def is_deleted(self):
         return self.status == 'deleted'
 
@@ -123,6 +127,12 @@ class Event(db.Model):
         self.status = 'canceled'
         self.put()
         logging.info('%s canceled %s' % (user.nickname, self.name))
+
+    def on_hold(self):
+        user = users.get_current_user()
+        self.status = 'onhold'
+        self.put()
+        logging.info('%s put %s on hold' % (user.nickname, self.name))
 
     def delete(self):
         user = users.get_current_user()

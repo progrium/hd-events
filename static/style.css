@@ -10,6 +10,7 @@ body { font-family: Verdana,Arial,sans-serif; margin: 0px;}
 #header h2 { font-size: x-large; margin: 0px; }
 #new-event-link {position: absolute; right: 0px; padding: 2px 2px; background-color:#d50025;}
 #new-event-link a {color: #fff; text-decoration: none;}
+#contact-link {float:left; margin-left: 10px;}
 body.new #new-event-link {display: none;}
 
 .step span { color: white; background-color: #b10026; padding: 1px; padding-left: 4px; padding-right: 4px;}

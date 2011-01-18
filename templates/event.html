@@ -10,6 +10,7 @@
           (This will return the event to the &ldquo;pending&rdquo; status.)
         {% else %}
           {% if access_rights.can_approve %}<input type="submit" name="state" value="Approve" />{% endif %}
+          {% if access_rights.can_cancel and not event.is_onhold %}<input type="submit" name="state" value="OnHold" />{% endif %}
           {% if access_rights.can_cancel and not event.is_canceled %}<input type="submit" name="state" value="Cancel" />{% endif %}
           {% if access_rights.is_admin %}<input type="submit" name="state" value="Delete" />{% endif %}
           {% if access_rights.can_edit %}<input type="button" value="Edit" onclick="document.location.href='/edit/{{event.key.id}}';" />{% endif %}
